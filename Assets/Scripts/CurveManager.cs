@@ -8,26 +8,19 @@ public class CurveManager : MonoBehaviour
     [SerializeField]
     GameObject marker;
 
+    private List<GameObject> markerList = new List<GameObject>();
+
     private UserInputActions userInputActions;
-    private bool leftMouseButtonPress;
 
-    private void Awake()
+    private void OnEnable()
     {
-        //I'm assuming the "creating curve" mode is on as default. If later we want to go to "record" mode, these might need to change.
-        userInputActions = new UserInputActions();
-        userInputActions.EditingCurve.Enable();
-
+        userInputActions = GameManager.Instance.GetInputAction();
         userInputActions.EditingCurve.AddMarker.performed += AddMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.performed += MoveMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.canceled += MoveMarker_canceled;
     }
 
-    private void Update()
+    private void OnDisable()
     {
-        if (leftMouseButtonPress)
-        {
-            //selected marker follows mouse
-        }
+        userInputActions.EditingCurve.AddMarker.performed -= AddMarker_performed;
     }
 
     private void AddMarker_performed(InputAction.CallbackContext context)
@@ -35,18 +28,7 @@ public class CurveManager : MonoBehaviour
         Vector3 mousePosition = Mouse.current.position.ReadValue();
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
         mouseWorldPosition.z = 0;
-        Instantiate(marker, mouseWorldPosition, Quaternion.identity);
-    }
-
-    private void MoveMarker_performed(InputAction.CallbackContext context)
-    {
-        leftMouseButtonPress = context.ReadValueAsButton();
-        Debug.Log(context.ReadValueAsButton());
-    }
-
-    private void MoveMarker_canceled(InputAction.CallbackContext context)
-    {
-        leftMouseButtonPress = context.ReadValueAsButton();
-        Debug.Log(context.ReadValueAsButton());
+        GameObject newMarker = Instantiate(marker, mouseWorldPosition, Quaternion.identity);
+        markerList.Add(newMarker);
     }
 }
