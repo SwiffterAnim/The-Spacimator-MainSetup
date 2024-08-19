@@ -1,0 +1,54 @@
+{
+    "name": "UserInputActions",
+    "maps": [
+        {
+            "name": "EditingCurve",
+            "id": "0e2c86ca-e4d2-4e68-ae37-585e185c5136",
+            "actions": [
+                {
+                    "name": "AddMarker",
+                    "type": "Button",
+                    "id": "157ea672-0392-414a-a909-6d240c1b966f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "MoveMarker",
+                    "type": "Button",
+                    "id": "1a0896fa-029d-46cb-87a8-0614f7aef2a3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "98364513-fa90-4997-94e5-a6400cca232c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AddMarker",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f92301ec-1a6b-4c3b-ad41-f7dfb43d4bad",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveMarker",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
