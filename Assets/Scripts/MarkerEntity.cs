@@ -12,7 +12,5 @@ public class MarkerEntity : MonoBehaviour
 
     public Vector3 defaultScale;
 
-    public bool isHovered;
-
     public int frameNumber;
 }

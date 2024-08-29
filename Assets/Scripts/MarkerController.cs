@@ -10,18 +10,6 @@ public class MarkerController : MonoBehaviour
     [SerializeField]
     MarkerEntity markerEntity;
 
-    private void Update()
-    {
-        if (markerEntity.isHovered)
-        {
-            VisualOnHoveredMarker();
-        }
-        else
-        {
-            VisualOffHoveredMarker();
-        }
-    }
-
     public void VisualOnHoveredMarker()
     {
         spriteRenderer.color = markerEntity.selectedColor;

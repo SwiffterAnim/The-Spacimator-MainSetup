@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -138128407465198626}
   m_Layer: 0
   m_Name: Marker
-  m_TagString: Untagged
+  m_TagString: Marker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -117,7 +117,8 @@ MonoBehaviour:
   selectedColor: {r: 0.99607843, g: 0.8, b: 0.28627452, a: 1}
   selectedScale: {x: 0.12, y: 0.21, z: 0.1}
   defaultScale: {x: 0.1, y: 0.16, z: 0.1}
-  isSelected: 0
+  isHovered: 0
+  frameNumber: 0
 --- !u!70 &-138128407465198626
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
