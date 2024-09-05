@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.16, z: 0.1}
+  m_LocalScale: {x: 0.12, y: 0.22, z: 0.12092437}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -101,6 +101,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 2512497904078708176}
   markerEntity: {fileID: -208060237507091071}
+  inputManager: {fileID: 0}
 --- !u!114 &-208060237507091071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,11 +115,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultColor: {r: 0.28627452, g: 0.9607843, b: 0.99215686, a: 1}
-  selectedColor: {r: 0.99607843, g: 0.8, b: 0.28627452, a: 1}
-  selectedScale: {x: 0.12, y: 0.21, z: 0.1}
+  hoveredColor: {r: 0.99215686, g: 0.8, b: 0.28627452, a: 1}
+  selectedColor: {r: 0.24701849, g: 0.8584906, b: 0.48328868, a: 1}
+  hoveredScale: {x: 0.12, y: 0.22, z: 0.1}
   defaultScale: {x: 0.1, y: 0.16, z: 0.1}
-  isHovered: 0
   frameNumber: 0
+  isHovered: 0
+  isSelected: 0
 --- !u!70 &-138128407465198626
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

@@ -47,4 +47,3 @@ MonoBehaviour:
   marker: {fileID: 2140980353681601456, guid: d835d243d698e4398a39bb2cb8f154d7, type: 3}
   inputManager: {fileID: 0}
   markerManager: {fileID: 0}
-  selectedMarker: {fileID: 0}

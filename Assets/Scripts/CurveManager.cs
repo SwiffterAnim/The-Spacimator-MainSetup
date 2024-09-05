@@ -14,9 +14,10 @@ public class CurveManager : MonoBehaviour
     [SerializeField]
     MarkerManager markerManager;
 
+    private bool leftMouseButtonIsPressed = false;
     private UserInputActions userInputActions;
-    private bool leftMouseButtonPress = false;
     private GameObject selectedMarker;
+    private GameObject selectedObject;
 
     // private MarkerController markerController;
 
@@ -37,26 +38,31 @@ public class CurveManager : MonoBehaviour
 
     private void Update()
     {
-        if (selectedMarker != null)
+        if (markerManager.selectedMarkerList != null && leftMouseButtonIsPressed)
         {
-            if (
-                selectedMarker.transform.gameObject.TryGetComponent(
-                    out MarkerController markerController
-                )
-            )
+            for (int i = 0; i < markerManager.selectedMarkerList.Count; i++)
             {
-                markerController.MoveMarkerWithMouse(inputManager.GetWorldMouseLocation2D());
+                if (
+                    markerManager
+                        .selectedMarkerList[i]
+                        .TryGetComponent(out MarkerController markerController)
+                )
+                {
+                    markerController.MoveMarkerWithMouse(inputManager.GetWorldMouseLocation2D());
+                }
             }
         }
     }
 
     private void AddMarker_performed(InputAction.CallbackContext context)
     {
+        DeselectAllMarkers();
         Vector2 mouseWorldPosition2D = inputManager.GetWorldMouseLocation2D();
         GameObject newMarker = Instantiate(marker, mouseWorldPosition2D, Quaternion.identity);
         markerManager.markerList.Add(newMarker);
         if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
         {
+            //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
             //I'm sure I'll have to make this better, because when I started removing markers, or adding markers in between other markers in the curve, this will have to be better.
             markerEntity.frameNumber = markerManager.markerList.Count;
         }
@@ -64,19 +70,81 @@ public class CurveManager : MonoBehaviour
 
     private void MoveMarker_performed(InputAction.CallbackContext context)
     {
-        //Do I need this?
-        leftMouseButtonPress = true;
+        leftMouseButtonIsPressed = true;
 
         RaycastHit2D[] mouseRayCastHit = inputManager.DetectALL_MouseRayCastHit2D();
         if (mouseRayCastHit.Length > 0)
         {
-            selectedMarker = inputManager.GetHoveredObject();
+            selectedObject = inputManager.GetHoveredObject();
+
+            if (selectedObject.TryGetComponent(out MarkerEntity markerEntity)) //Checks if it's a marker.
+            {
+                selectedMarker = selectedObject;
+
+                if (markerManager.selectedMarkerList.Count == 0) //If the list is empty, select this marker.
+                {
+                    SelectMarker(markerEntity, selectedMarker);
+                }
+                else
+                {
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) //If it isn't empty check if shift is clicked.
+                    {
+                        if (markerManager.selectedMarkerList.Contains(selectedMarker)) //If marker already in list, remove it.
+                        {
+                            DeselectMarker(markerEntity, selectedMarker);
+                        }
+                        else //otherwise, add it.
+                        {
+                            SelectMarker(markerEntity, selectedMarker);
+                        }
+                    }
+                    else //if list is not empty and shit is NOT clicked
+                    {
+                        if (markerManager.selectedMarkerList.Contains(selectedMarker)) //If this marker is selected.
+                        {
+                            //Do nothing. Basically will move all of them together.
+                        }
+                        else //If it isn't, deselect all, and select this one.
+                        {
+                            DeselectAllMarkers();
+                            SelectMarker(markerEntity, selectedMarker);
+                        }
+                    }
+                }
+            }
         }
+        else
+        {
+            DeselectAllMarkers();
+        }
+    }
+
+    private void DeselectAllMarkers()
+    {
+        for (int i = markerManager.selectedMarkerList.Count - 1; i >= 0; i--)
+        {
+            markerManager.selectedMarkerList[i].GetComponent<MarkerEntity>().isSelected = false;
+            markerManager.selectedMarkerList.RemoveAt(i);
+        }
+    }
+
+    private void SelectMarker(MarkerEntity markerEntity, GameObject selectedMarker)
+    {
+        markerEntity.isSelected = true;
+        markerManager.selectedMarkerList.Add(selectedMarker);
+    }
+
+    private void DeselectMarker(MarkerEntity markerEntity, GameObject selectedMarker)
+    {
+        markerEntity.isSelected = false;
+        markerManager.selectedMarkerList.Remove(selectedMarker);
     }
 
     private void MoveMarker_canceled(InputAction.CallbackContext context)
     {
-        leftMouseButtonPress = false;
+        leftMouseButtonIsPressed = false;
+
         selectedMarker = null;
+        selectedObject = null;
     }
 }

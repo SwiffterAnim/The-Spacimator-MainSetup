@@ -11,6 +11,7 @@ public class MarkerManager : MonoBehaviour
     private List<GameObject> markersMouseRayCastHits = new List<GameObject>();
     private GameObject hoveredMarker;
     public List<GameObject> markerList = new List<GameObject>();
+    public List<GameObject> selectedMarkerList = new List<GameObject>();
 
     private void Update()
     {
@@ -24,7 +25,7 @@ public class MarkerManager : MonoBehaviour
         }
         else if (hoveredMarker != null)
         {
-            hoveredMarker.GetComponent<MarkerController>().VisualOffHoveredMarker();
+            hoveredMarker.GetComponent<MarkerEntity>().isHovered = false;
         }
         //This is basically clearing in every frame. That's no good..
         markersMouseRayCastHits.Clear();
@@ -35,21 +36,22 @@ public class MarkerManager : MonoBehaviour
         //Gets the top marker, important if there's more than one.
         hoveredMarker = markersList[^1];
 
-        // hoveredMarker.GetComponent<MarkerController>().VisualOnHoveredMarker();
-
         //Turning all the others off.
         for (int i = 0; i < markerList.Count; i++)
         {
-            if (
-                markerList[i].GetComponent<MarkerEntity>().frameNumber
-                == hoveredMarker.GetComponent<MarkerEntity>().frameNumber
-            )
+            if (markerList[i].TryGetComponent(out MarkerEntity iMarkerEntity))
             {
-                hoveredMarker.GetComponent<MarkerController>().VisualOnHoveredMarker();
-            }
-            else
-            {
-                markerList[i].GetComponent<MarkerController>().VisualOffHoveredMarker();
+                if (
+                    iMarkerEntity.frameNumber
+                    == hoveredMarker.GetComponent<MarkerEntity>().frameNumber
+                )
+                {
+                    iMarkerEntity.isHovered = true;
+                }
+                else
+                {
+                    iMarkerEntity.isHovered = false;
+                }
             }
         }
     }
