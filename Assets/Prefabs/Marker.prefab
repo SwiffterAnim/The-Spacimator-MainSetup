@@ -101,7 +101,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 2512497904078708176}
   markerEntity: {fileID: -208060237507091071}
-  inputManager: {fileID: 0}
 --- !u!114 &-208060237507091071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116,7 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultColor: {r: 0.28627452, g: 0.9607843, b: 0.99215686, a: 1}
   hoveredColor: {r: 0.99215686, g: 0.8, b: 0.28627452, a: 1}
-  selectedColor: {r: 0.24701849, g: 0.8584906, b: 0.48328868, a: 1}
+  selectedColor: {r: 0.85882354, g: 0.34819004, b: 0.24705881, a: 1}
   hoveredScale: {x: 0.12, y: 0.22, z: 0.1}
   defaultScale: {x: 0.1, y: 0.16, z: 0.1}
   frameNumber: 0

@@ -44,6 +44,15 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DeleteMarker"",
+                    ""type"": ""Button"",
+                    ""id"": ""67313b06-28ea-4ff9-b884-74dc48e61557"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -68,6 +77,17 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""MoveMarker"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""409d3c1a-afdd-4ef0-85a0-a83d109379af"",
+                    ""path"": ""<Keyboard>/backspace"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DeleteMarker"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -78,6 +98,7 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
         m_EditingCurve = asset.FindActionMap("EditingCurve", throwIfNotFound: true);
         m_EditingCurve_AddMarker = m_EditingCurve.FindAction("AddMarker", throwIfNotFound: true);
         m_EditingCurve_MoveMarker = m_EditingCurve.FindAction("MoveMarker", throwIfNotFound: true);
+        m_EditingCurve_DeleteMarker = m_EditingCurve.FindAction("DeleteMarker", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -141,12 +162,14 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
     private List<IEditingCurveActions> m_EditingCurveActionsCallbackInterfaces = new List<IEditingCurveActions>();
     private readonly InputAction m_EditingCurve_AddMarker;
     private readonly InputAction m_EditingCurve_MoveMarker;
+    private readonly InputAction m_EditingCurve_DeleteMarker;
     public struct EditingCurveActions
     {
         private @UserInputActions m_Wrapper;
         public EditingCurveActions(@UserInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @AddMarker => m_Wrapper.m_EditingCurve_AddMarker;
         public InputAction @MoveMarker => m_Wrapper.m_EditingCurve_MoveMarker;
+        public InputAction @DeleteMarker => m_Wrapper.m_EditingCurve_DeleteMarker;
         public InputActionMap Get() { return m_Wrapper.m_EditingCurve; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -162,6 +185,9 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
             @MoveMarker.started += instance.OnMoveMarker;
             @MoveMarker.performed += instance.OnMoveMarker;
             @MoveMarker.canceled += instance.OnMoveMarker;
+            @DeleteMarker.started += instance.OnDeleteMarker;
+            @DeleteMarker.performed += instance.OnDeleteMarker;
+            @DeleteMarker.canceled += instance.OnDeleteMarker;
         }
 
         private void UnregisterCallbacks(IEditingCurveActions instance)
@@ -172,6 +198,9 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
             @MoveMarker.started -= instance.OnMoveMarker;
             @MoveMarker.performed -= instance.OnMoveMarker;
             @MoveMarker.canceled -= instance.OnMoveMarker;
+            @DeleteMarker.started -= instance.OnDeleteMarker;
+            @DeleteMarker.performed -= instance.OnDeleteMarker;
+            @DeleteMarker.canceled -= instance.OnDeleteMarker;
         }
 
         public void RemoveCallbacks(IEditingCurveActions instance)
@@ -193,5 +222,6 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
     {
         void OnAddMarker(InputAction.CallbackContext context);
         void OnMoveMarker(InputAction.CallbackContext context);
+        void OnDeleteMarker(InputAction.CallbackContext context);
     }
 }

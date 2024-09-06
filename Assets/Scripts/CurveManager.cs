@@ -27,6 +27,7 @@ public class CurveManager : MonoBehaviour
         userInputActions.EditingCurve.AddMarker.performed += AddMarker_performed;
         userInputActions.EditingCurve.MoveMarker.performed += MoveMarker_performed;
         userInputActions.EditingCurve.MoveMarker.canceled += MoveMarker_canceled;
+        userInputActions.EditingCurve.DeleteMarker.performed += DeleteMarker_performed;
     }
 
     private void OnDisable()
@@ -34,6 +35,7 @@ public class CurveManager : MonoBehaviour
         userInputActions.EditingCurve.AddMarker.performed -= AddMarker_performed;
         userInputActions.EditingCurve.MoveMarker.performed -= MoveMarker_performed;
         userInputActions.EditingCurve.MoveMarker.canceled -= MoveMarker_canceled;
+        userInputActions.EditingCurve.DeleteMarker.performed -= DeleteMarker_performed;
     }
 
     private void Update()
@@ -57,6 +59,7 @@ public class CurveManager : MonoBehaviour
     private void AddMarker_performed(InputAction.CallbackContext context)
     {
         DeselectAllMarkers();
+
         Vector2 mouseWorldPosition2D = inputManager.GetWorldMouseLocation2D();
         GameObject newMarker = Instantiate(marker, mouseWorldPosition2D, Quaternion.identity);
         markerManager.markerList.Add(newMarker);
@@ -146,5 +149,34 @@ public class CurveManager : MonoBehaviour
 
         selectedMarker = null;
         selectedObject = null;
+    }
+
+    private void DeleteMarker_performed(InputAction.CallbackContext context)
+    {
+        for (int i = 0; i < markerManager.selectedMarkerList.Count; i++)
+        {
+            markerManager.markerList.Remove(markerManager.selectedMarkerList[i]);
+            Destroy(markerManager.selectedMarkerList[i]);
+        }
+        markerManager.selectedMarkerList.Clear();
+        UpdateFrameNumber();
+        //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
+        //Right now I'm just deleting and updating the frame number. I'm not deleting and creating "ghost" markers.
+        //I think for this to be nice to have the option to add ghost markers.
+        //1- If you delete normally, it updates frame numbers and timeline.
+        //2- If you delete with SHIFT, then it creates ghost markers. I think that's better.
+    }
+
+    private void UpdateFrameNumber()
+    {
+        //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
+        //Right now I'm just deleting
+        for (int i = 0; i < markerManager.markerList.Count; i++)
+        {
+            if (markerManager.markerList[i].TryGetComponent(out MarkerEntity iMarkerEntity))
+            {
+                iMarkerEntity.frameNumber = i + 1;
+            }
+        }
     }
 }

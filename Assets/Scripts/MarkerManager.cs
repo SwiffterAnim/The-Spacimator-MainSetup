@@ -41,6 +41,7 @@ public class MarkerManager : MonoBehaviour
         {
             if (markerList[i].TryGetComponent(out MarkerEntity iMarkerEntity))
             {
+                //Exactly because I'm checking the frame number, I can use this to highligh both markers in the curve and timeline.
                 if (
                     iMarkerEntity.frameNumber
                     == hoveredMarker.GetComponent<MarkerEntity>().frameNumber
