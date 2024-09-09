@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4879506332484149025}
   - component: {fileID: 3906938819488110563}
   - component: {fileID: 4750616436114432465}
+  - component: {fileID: -1114635761021481889}
+  - component: {fileID: -1994735667306127891}
   m_Layer: 0
   m_Name: CurveGroup
   m_TagString: Untagged
@@ -48,6 +50,7 @@ MonoBehaviour:
   marker: {fileID: 2140980353681601456, guid: d835d243d698e4398a39bb2cb8f154d7, type: 3}
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   markerSelection: {fileID: 4750616436114432465}
+  splineController: {fileID: -1114635761021481889}
   markerList: []
 --- !u!114 &4750616436114432465
 MonoBehaviour:
@@ -64,3 +67,57 @@ MonoBehaviour:
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   curveController: {fileID: 3906938819488110563}
   selectedMarkerList: []
+--- !u!114 &-1114635761021481889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7577508812450695204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66d8af1993e2f47539de37d550500d4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splineContainer: {fileID: -1994735667306127891}
+  tension: 0.35
+--- !u!114 &-1994735667306127891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7577508812450695204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab5c7d4c32e743048dfca98e2d5914f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Spline:
+    m_EditModeType: 1
+    m_Knots: []
+    m_MetaData: []
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  m_Splines:
+  - m_EditModeType: 1
+    m_Knots: []
+    m_MetaData: []
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  m_Knots:
+    m_KnotsLink: []

@@ -14,6 +14,9 @@ public class CurveController : MonoBehaviour
     [SerializeField]
     MarkerSelection markerSelection;
 
+    [SerializeField]
+    SplineController splineController;
+
     private bool leftMouseButtonIsPressed = false;
     private UserInputActions userInputActions;
     private GameObject selectedMarker;
@@ -52,6 +55,7 @@ public class CurveController : MonoBehaviour
                 )
                 {
                     markerController.MoveMarkerWithMouse(inputManager.GetWorldMouseLocation2D());
+                    splineController.UpdateSpline(markerList);
                 }
             }
         }
@@ -75,6 +79,7 @@ public class CurveController : MonoBehaviour
             //I'm sure I'll have to make this better, because when I started removing markers, or adding markers in between other markers in the curve, this will have to be better.
             markerEntity.frameNumber = markerList.Count;
         }
+        splineController.AddKnot(newMarker.transform.position);
     }
 
     private void MoveMarker_performed(InputAction.CallbackContext context)
@@ -159,11 +164,28 @@ public class CurveController : MonoBehaviour
 
     private void DeleteMarker_performed(InputAction.CallbackContext context)
     {
+        //This was the way I found to delete the markers in their correct indexes, before I was getting errors.
+        List<int> indexToDelete = new List<int>();
         for (int i = 0; i < markerSelection.selectedMarkerList.Count; i++)
         {
-            markerList.Remove(markerSelection.selectedMarkerList[i]);
-            Destroy(markerSelection.selectedMarkerList[i]);
+            if (
+                markerSelection.selectedMarkerList[i].TryGetComponent(out MarkerEntity markerEntity)
+            )
+            {
+                indexToDelete.Add(markerEntity.frameNumber - 1);
+            }
         }
+        indexToDelete.Sort();
+        indexToDelete.Reverse();
+
+        foreach (int index in indexToDelete)
+        {
+            GameObject markerToDelete = markerList[index];
+            splineController.RemoveKnot(index);
+            markerList.RemoveAt(index);
+            Destroy(markerToDelete);
+        }
+
         markerSelection.selectedMarkerList.Clear();
         UpdateFrameNumber();
         //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
