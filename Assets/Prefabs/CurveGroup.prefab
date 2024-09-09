@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4625978308611905923
+--- !u!1 &7577508812450695204
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,42 +8,59 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4918404167447808894}
-  - component: {fileID: 6401251914938576811}
+  - component: {fileID: 4879506332484149025}
+  - component: {fileID: 3906938819488110563}
+  - component: {fileID: 4750616436114432465}
   m_Layer: 0
-  m_Name: CurveManager
+  m_Name: CurveGroup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4918404167447808894
+--- !u!4 &4879506332484149025
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4625978308611905923}
+  m_GameObject: {fileID: 7577508812450695204}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.22207673, y: 0.5218991, z: 0.08897213}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6401251914938576811
+--- !u!114 &3906938819488110563
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4625978308611905923}
+  m_GameObject: {fileID: 7577508812450695204}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1252602734e8642658a8c04362360453, type: 3}
+  m_Script: {fileID: 11500000, guid: 2deb33634efb24767a4c350ec8ce90c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   marker: {fileID: 2140980353681601456, guid: d835d243d698e4398a39bb2cb8f154d7, type: 3}
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
-  markerManager: {fileID: 5706829943252063502, guid: 2813bdfb6ad204428b6abe8f074d6863, type: 3}
+  markerSelection: {fileID: 4750616436114432465}
+  markerList: []
+--- !u!114 &4750616436114432465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7577508812450695204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acec4b61655a748fab51a59663490eac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
+  curveController: {fileID: 3906938819488110563}
+  selectedMarkerList: []
