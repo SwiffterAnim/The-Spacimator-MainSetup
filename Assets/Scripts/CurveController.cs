@@ -58,6 +58,8 @@ public class CurveController : MonoBehaviour
                     splineController.UpdateSpline(markerList);
                 }
             }
+            //Update rotation of markers.
+            UpdateMarkers();
         }
     }
 
@@ -80,6 +82,7 @@ public class CurveController : MonoBehaviour
             markerEntity.frameNumber = markerList.Count;
         }
         splineController.AddKnot(newMarker.transform.position);
+        UpdateMarkers();
     }
 
     private void MoveMarker_performed(InputAction.CallbackContext context)
@@ -188,6 +191,7 @@ public class CurveController : MonoBehaviour
 
         markerSelection.selectedMarkerList.Clear();
         UpdateFrameNumber();
+        UpdateMarkers();
         //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
         //Right now I'm just deleting and updating the frame number. I'm not deleting and creating "ghost" markers.
         //I think for this to be nice to have the option to add ghost markers.
@@ -197,8 +201,6 @@ public class CurveController : MonoBehaviour
 
     private void UpdateFrameNumber()
     {
-        //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
-        //Right now I'm just deleting
         for (int i = 0; i < markerList.Count; i++)
         {
             if (markerList[i].TryGetComponent(out MarkerEntity iMarkerEntity))
@@ -206,5 +208,16 @@ public class CurveController : MonoBehaviour
                 iMarkerEntity.frameNumber = i + 1;
             }
         }
+    }
+
+    private void UpdateMarkers()
+    {
+        //Update marker's rotation taken from knot at same index.
+        for (int i = 0; i < markerList.Count; i++)
+        {
+            markerList[i].gameObject.transform.rotation = splineController.GetKnotRotation(i);
+        }
+
+        //I'll use this now to update the rotation of the markers, but this will also update the position/creation of ghost markers maybe.
     }
 }
