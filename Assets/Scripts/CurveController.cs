@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Splines;
 
 public class CurveController : MonoBehaviour
 {
@@ -16,6 +17,9 @@ public class CurveController : MonoBehaviour
 
     [SerializeField]
     SplineController splineController;
+
+    [SerializeField]
+    SplineMeshController splineMeshController;
 
     private bool leftMouseButtonIsPressed = false;
     private UserInputActions userInputActions;
@@ -60,6 +64,7 @@ public class CurveController : MonoBehaviour
             }
             //Update rotation of markers.
             UpdateMarkers();
+            splineMeshController.BuildMesh();
         }
     }
 
@@ -83,6 +88,7 @@ public class CurveController : MonoBehaviour
         }
         splineController.AddKnot(newMarker.transform.position);
         UpdateMarkers();
+        splineMeshController.BuildMesh();
     }
 
     private void MoveMarker_performed(InputAction.CallbackContext context)
@@ -192,6 +198,7 @@ public class CurveController : MonoBehaviour
         markerSelection.selectedMarkerList.Clear();
         UpdateFrameNumber();
         UpdateMarkers();
+        splineMeshController.BuildMesh();
         //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
         //Right now I'm just deleting and updating the frame number. I'm not deleting and creating "ghost" markers.
         //I think for this to be nice to have the option to add ghost markers.
