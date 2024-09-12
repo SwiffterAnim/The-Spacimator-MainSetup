@@ -87,7 +87,7 @@ MonoBehaviour:
   splineContainer: {fileID: -1994735667306127891}
   circlePointVisualizer: {fileID: 2957799444936293044, guid: bc82807acf2c34f66a7da77ef5c8992b, type: 3}
   meshFilter: {fileID: 3582918200595134695}
-  meshWidth: 0.02
+  meshWidth: 0.035
   resolution: 12
   drawMesh: 0
 --- !u!114 &-1114635761021481889
@@ -102,8 +102,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66d8af1993e2f47539de37d550500d4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   splineContainer: {fileID: -1994735667306127891}
-  tension: 0.35
+  hoverPointerPrefab: {fileID: 2537828424297882823, guid: 6523249ea3b0c418380976d48d3b88de, type: 3}
+  tension: 1
+  curveHovered: 0
 --- !u!114 &-1994735667306127891
 MonoBehaviour:
   m_ObjectHideFlags: 0

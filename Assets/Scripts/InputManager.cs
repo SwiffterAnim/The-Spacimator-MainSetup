@@ -17,8 +17,28 @@ public class InputManager : MonoBehaviour
 
     public RaycastHit2D[] DetectALL_MouseRayCastHit2D()
     {
-        mouseHitAllArray = Physics2D.RaycastAll(GetWorldMouseLocation2D(), Vector2.zero);
+        mouseHitAllArray = Physics2D.RaycastAll(GetWorldMouseLocation2D(), Vector3.forward);
         return mouseHitAllArray;
+    }
+
+    public RaycastHit[] DetectALL_MouseRaycastHit3D()
+    {
+        Vector3 mouseHit = GetWorldMouseLocation2D();
+
+        RaycastHit[] mouseHitAllArray3D = Physics.RaycastAll(mouseHit, Vector3.forward);
+        RaycastHit[] negativeMouseHitAllArray3D = Physics.RaycastAll(mouseHit, -Vector3.forward);
+        if (mouseHitAllArray3D.Length != 0)
+        {
+            return mouseHitAllArray3D;
+        }
+        else if (negativeMouseHitAllArray3D.Length != 0)
+        {
+            return negativeMouseHitAllArray3D;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public GameObject GetHoveredObject()

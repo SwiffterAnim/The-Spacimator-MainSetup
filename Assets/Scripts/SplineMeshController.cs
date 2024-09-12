@@ -34,19 +34,6 @@ public class SplineMeshController : MonoBehaviour
     private List<Vector3> mesh_vertsP2 = new List<Vector3>();
     private Mesh mesh;
 
-    /*
-        private void InstantiateVerts()
-        {
-            foreach (Vector3 point in mesh_vertsP1)
-            {
-                Instantiate(circlePointVisualizer, point, Quaternion.identity);
-            }
-            foreach (Vector3 point in mesh_vertsP2)
-            {
-                Instantiate(circlePointVisualizer, point, Quaternion.identity);
-            }
-        }
-    */
     private void GetVerts()
     {
         mesh_vertsP1.Clear();
@@ -173,40 +160,103 @@ public class SplineMeshController : MonoBehaviour
         }
     }
 
+    //I'm using BuildMesh2 because I'm having to hack my way with this mesh.
+    //Basically I'm having to create a duplicated mesh since the mesh collider only detects collision on one side, and since the vertices are flipping, sometimes it doesn't detect...
+    //Mega hacky.
     public void BuildMesh2()
     {
-        mesh = new Mesh();
-        List<Vector3> verts = new List<Vector3>();
-        List<int> tris = new List<int>();
-        int offset;
-
-        int length = mesh_vertsP1.Count;
-
-        for (int i = 1; i <= length; i++)
+        if (splineContainer.Spline.Count > 1)
         {
-            Vector3 p1 = mesh_vertsP1[i - 1];
-            Vector3 p2 = mesh_vertsP2[i - 1];
-            Vector3 p3 = mesh_vertsP1[i];
-            Vector3 p4 = mesh_vertsP2[i];
+            GetVerts();
+            // Check if the lists have the same number of points
+            if (mesh_vertsP1.Count != mesh_vertsP2.Count)
+            {
+                Debug.LogError("Both sides of the spline must have the same number of points.");
+                return;
+            }
 
-            offset = 4 * (i - 1);
+            // Reuse existing mesh if possible, otherwise create a new one
+            if (mesh == null)
+            {
+                mesh = new Mesh();
+            }
+            // Clear previous mesh data to avoid overlapping meshes
+            mesh.Clear();
 
-            int t1 = offset + 0;
-            int t2 = offset + 2;
-            int t3 = offset + 3;
+            // Total number of vertices is the sum of left and right side points
+            int numVertices = mesh_vertsP1.Count + mesh_vertsP2.Count;
+            Vector3[] vertices = new Vector3[numVertices * 2]; // *2 to account for the duplicated side
+            int[] triangles = new int[(mesh_vertsP1.Count - 1) * 6 * 2]; // *2 to duplicate the mesh
+            Vector2[] uvs = new Vector2[numVertices * 2]; // UVs for both original and duplicated
 
-            int t4 = offset + 3;
-            int t5 = offset + 1;
-            int t6 = offset + 0;
+            // Assign vertices and triangles from both sides
+            for (int i = 0; i < mesh_vertsP1.Count; i++)
+            {
+                // Add left and right side vertices for the original mesh
+                vertices[i * 2] = mesh_vertsP1[i];
+                vertices[i * 2 + 1] = mesh_vertsP2[i];
 
-            verts.AddRange(new List<Vector3> { p1, p2, p3, p4 });
-            tris.AddRange(new List<int> { t1, t2, t3, t4, t5, t6 });
+                // Assign UV coordinates (can be customized based on how you want the texture to be applied)
+                uvs[i * 2] = new Vector2(0, i / (float)(mesh_vertsP1.Count - 1)); // Left side UV
+                uvs[i * 2 + 1] = new Vector2(1, i / (float)(mesh_vertsP2.Count - 1)); // Right side UV
+
+                // Build triangles for the original mesh, except the last one
+                if (i < mesh_vertsP1.Count - 1)
+                {
+                    // First triangle (left, right, next right)
+                    triangles[i * 6] = i * 2;
+                    triangles[i * 6 + 1] = i * 2 + 1;
+                    triangles[i * 6 + 2] = i * 2 + 3;
+
+                    // Second triangle (left, next right, next left)
+                    triangles[i * 6 + 3] = i * 2;
+                    triangles[i * 6 + 4] = i * 2 + 3;
+                    triangles[i * 6 + 5] = i * 2 + 2;
+                }
+
+                // Duplicate vertices for the inverted mesh (flip normals)
+                vertices[numVertices + i * 2] = mesh_vertsP1[i];
+                vertices[numVertices + i * 2 + 1] = mesh_vertsP2[i];
+
+                // Assign UV coordinates for the duplicated mesh
+                uvs[numVertices + i * 2] = new Vector2(0, i / (float)(mesh_vertsP1.Count - 1));
+                uvs[numVertices + i * 2 + 1] = new Vector2(1, i / (float)(mesh_vertsP2.Count - 1));
+
+                // Build triangles for the inverted mesh
+                if (i < mesh_vertsP1.Count - 1)
+                {
+                    // Inverted triangles (flipped order to reverse normals)
+                    triangles[(i * 6) + (mesh_vertsP1.Count - 1) * 6] = numVertices + i * 2;
+                    triangles[(i * 6) + (mesh_vertsP1.Count - 1) * 6 + 1] = numVertices + i * 2 + 3;
+                    triangles[(i * 6) + (mesh_vertsP1.Count - 1) * 6 + 2] = numVertices + i * 2 + 1;
+
+                    triangles[(i * 6) + (mesh_vertsP1.Count - 1) * 6 + 3] = numVertices + i * 2;
+                    triangles[(i * 6) + (mesh_vertsP1.Count - 1) * 6 + 4] = numVertices + i * 2 + 2;
+                    triangles[(i * 6) + (mesh_vertsP1.Count - 1) * 6 + 5] = numVertices + i * 2 + 3;
+                }
+            }
+
+            // Assign the vertices, triangles, and uvs to the mesh
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.uv = uvs;
+
+            // Optionally, calculate the mesh bounds and normals
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
+
+            // Assign the mesh to the MeshFilter
+            meshFilter.mesh = mesh;
+
+            // Optional: Add or update MeshCollider to match the mesh
+            MeshCollider meshCollider = gameObject.GetComponent<MeshCollider>();
+            if (meshCollider == null)
+            {
+                meshCollider = gameObject.AddComponent<MeshCollider>();
+            }
+
+            // Assign the generated mesh to the collider
+            meshCollider.sharedMesh = mesh;
         }
-
-        mesh.SetVertices(verts);
-        mesh.SetTriangles(tris, 0);
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
-        meshFilter.mesh = mesh;
     }
 }

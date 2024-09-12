@@ -64,31 +64,56 @@ public class CurveController : MonoBehaviour
             }
             //Update rotation of markers.
             UpdateMarkers();
-            splineMeshController.BuildMesh();
+            //Update Mesh.
+            splineMeshController.BuildMesh2();
         }
     }
 
     private void AddMarker_performed(InputAction.CallbackContext context)
     {
         DeselectAllMarkers();
+        GameObject newMarker;
+        Vector2 markerPosition;
 
-        Vector2 mouseWorldPosition2D = inputManager.GetWorldMouseLocation2D();
-        GameObject newMarker = Instantiate(
-            marker,
-            mouseWorldPosition2D,
-            Quaternion.identity,
-            this.transform
-        );
-        markerList.Add(newMarker);
-        if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
+        if (splineController.curveHovered)
         {
-            //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
-            //I'm sure I'll have to make this better, because when I started removing markers, or adding markers in between other markers in the curve, this will have to be better.
-            markerEntity.frameNumber = markerList.Count;
+            float ratio;
+            markerPosition = splineController.GetNearestPositionInSpline(out ratio);
+            newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
+
+            //If is curve.Hovered, Insert at specific index.
+            int ratioIndex = splineController.GetMarkerIndex(ratio);
+            markerList.Insert(ratioIndex, newMarker);
+
+            //Updating all frame numbers.
+            for (int i = 0; i < markerList.Count; i++)
+            {
+                if (markerList[i].TryGetComponent(out MarkerEntity markerEntity))
+                {
+                    markerEntity.frameNumber = i + 1;
+                }
+            }
+
+            splineController.InsertKnot(markerPosition, ratioIndex);
         }
-        splineController.AddKnot(newMarker.transform.position);
+        else
+        {
+            markerPosition = inputManager.GetWorldMouseLocation2D();
+            newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
+
+            //If not, then add to the end.
+            markerList.Add(newMarker);
+            if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
+            {
+                //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
+                //I'm sure I'll have to make this better, because when I started removing markers, or adding markers in between other markers in the curve, this will have to be better.
+                markerEntity.frameNumber = markerList.Count;
+            }
+            splineController.AddKnot(newMarker.transform.position);
+        }
+
         UpdateMarkers();
-        splineMeshController.BuildMesh();
+        splineMeshController.BuildMesh2();
     }
 
     private void MoveMarker_performed(InputAction.CallbackContext context)
@@ -198,7 +223,7 @@ public class CurveController : MonoBehaviour
         markerSelection.selectedMarkerList.Clear();
         UpdateFrameNumber();
         UpdateMarkers();
-        splineMeshController.BuildMesh();
+        splineMeshController.BuildMesh2();
         //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
         //Right now I'm just deleting and updating the frame number. I'm not deleting and creating "ghost" markers.
         //I think for this to be nice to have the option to add ghost markers.

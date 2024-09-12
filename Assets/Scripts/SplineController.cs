@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -7,16 +8,93 @@ using UnityEngine.Splines;
 public class SplineController : MonoBehaviour
 {
     [SerializeField]
+    private InputManager inputManager;
+
+    [SerializeField]
     private SplineContainer splineContainer;
+
+    [SerializeField]
+    private GameObject hoverPointerPrefab;
 
     [SerializeField]
     private float tension;
 
     private Spline spline;
+    private GameObject hoverPointer;
+    private List<float> knotsRatios = new List<float>();
+    public bool curveHovered;
 
     private void Start()
     {
         spline = GetComponent<SplineContainer>().Spline;
+    }
+
+    private void Update()
+    {
+        //Check for mouseRayCastHits in 3D, because Mesh is a 3D object.
+        RaycastHit[] mouseRayCastHit = inputManager.DetectALL_MouseRaycastHit3D();
+        if (mouseRayCastHit != null)
+        {
+            //Checking if for some reason there's more than one 3D object detected.
+            if (mouseRayCastHit.Length > 1)
+            {
+                Debug.LogError("Two different 3D objects detected.");
+            }
+            //Checking if it's a curve mesh.
+            else if (
+                mouseRayCastHit[0].collider.gameObject.TryGetComponent(out SplineController SC)
+            )
+            {
+                //Instantiating a pointer for the player to know visually where the nearest point in the spline is.
+                Vector3 hoverPosition = GetNearestPositionInSpline(out float ratio);
+                if (hoverPointer == null)
+                {
+                    hoverPointer = Instantiate(
+                        hoverPointerPrefab,
+                        hoverPosition,
+                        Quaternion.identity
+                    );
+                }
+                hoverPointer.transform.position = hoverPosition;
+                curveHovered = true;
+            }
+        }
+        else
+        {
+            curveHovered = false;
+            if (hoverPointer != null)
+            {
+                Destroy(hoverPointer.gameObject);
+            }
+        }
+        //Deleting the pointer object and clearing the bool.
+    }
+
+    public int GetMarkerIndex(float ratio)
+    {
+        //This checks to see if the value ratio is found in the list and gives you back the index if it does.
+        //If not, it gives you a negative number of what is the index the number should be inserted in order to maintain order.
+        int index = knotsRatios.BinarySearch(ratio);
+
+        if (index < 0)
+        {
+            index = ~index; // This is where the value should be inserted to maintain order.
+        }
+
+        return index;
+    }
+
+    public Vector3 GetNearestPositionInSpline(out float ratio)
+    {
+        Vector3 mouseWorldPosition = inputManager.GetWorldMouseLocation2D();
+        float3 hoverPosition;
+        SplineUtility.GetNearestPoint(
+            spline,
+            (float3)mouseWorldPosition,
+            out hoverPosition,
+            out ratio
+        );
+        return (Vector3)hoverPosition;
     }
 
     public void AddKnot(Vector3 position)
@@ -24,6 +102,15 @@ public class SplineController : MonoBehaviour
         //Used by Curve Controller to add a knot at the end.
         BezierKnot knot = new BezierKnot((float3)position);
         spline.Add(knot, TangentMode.AutoSmooth, tension);
+        UpdateKnotsRatiosList();
+    }
+
+    public void InsertKnot(Vector3 position, int index)
+    {
+        //Used by Curve Controller to add a knot inbetween other knots.
+        BezierKnot knot = new BezierKnot((float3)position);
+        spline.Insert(index, knot, TangentMode.AutoSmooth, tension);
+        UpdateKnotsRatiosList();
     }
 
     public void UpdateSpline(List<GameObject> markerList)
@@ -35,11 +122,13 @@ public class SplineController : MonoBehaviour
             spline.SetKnot(i, iKnot);
             spline.SetAutoSmoothTension(i, tension);
         }
+        UpdateKnotsRatiosList();
     }
 
     public void RemoveKnot(int index)
     {
         spline.RemoveAt(index);
+        UpdateKnotsRatiosList();
     }
 
     public Quaternion GetKnotRotation(int knotIndex)
@@ -88,5 +177,19 @@ public class SplineController : MonoBehaviour
         float t = cumulativeLength / totalLength;
 
         return t;
+    }
+
+    public void UpdateKnotsRatiosList()
+    {
+        if (knotsRatios.Count != 0)
+        {
+            knotsRatios.Clear();
+        }
+
+        for (int i = 0; i < spline.Count; i++)
+        {
+            float ratio = GetKnotRatioInSpline(i);
+            knotsRatios.Add(ratio);
+        }
     }
 }
