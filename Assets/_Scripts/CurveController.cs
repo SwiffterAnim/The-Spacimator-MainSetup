@@ -75,13 +75,13 @@ public class CurveController : MonoBehaviour
         GameObject newMarker;
         Vector2 markerPosition;
 
-        if (splineController.curveHovered)
+        if (splineController.curveHovered) //Checks if will add a marker inbetween or at the end.
         {
             float ratio;
             markerPosition = splineController.GetNearestPositionInSpline(out ratio);
             newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
 
-            //If is curve.Hovered, Insert at specific index.
+            //If curve.Hovered, Insert at specific index.
             int ratioIndex = splineController.GetMarkerIndex(ratio);
             markerList.Insert(ratioIndex, newMarker);
 
@@ -96,19 +96,17 @@ public class CurveController : MonoBehaviour
 
             splineController.InsertKnot(markerPosition, ratioIndex);
         }
-        else
+        else //If not, then add to the end.
         {
             markerPosition = inputManager.GetWorldMouseLocation2D();
             newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
 
-            //If not, then add to the end.
             markerList.Add(newMarker);
             if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
             {
-                //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
-                //I'm sure I'll have to make this better, because when I started removing markers, or adding markers in between other markers in the curve, this will have to be better.
                 markerEntity.frameNumber = markerList.Count;
             }
+
             splineController.AddKnot(newMarker.transform.position);
         }
 

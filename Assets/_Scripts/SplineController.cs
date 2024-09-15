@@ -118,6 +118,7 @@ public class SplineController : MonoBehaviour
         for (int i = 0; i < markerList.Count; i++)
         {
             //Not sure this is the way..
+            //This is rebuilding the whole spline every frame while mouse left button is pressed.
             BezierKnot iKnot = new BezierKnot((float3)markerList[i].transform.position);
             spline.SetKnot(i, iKnot);
             spline.SetAutoSmoothTension(i, tension);
@@ -131,10 +132,20 @@ public class SplineController : MonoBehaviour
         UpdateKnotsRatiosList();
     }
 
+    // This is the method to get the rotation given an index.
     public Quaternion GetKnotRotation(int knotIndex)
     {
         float ratio = GetKnotRatioInSpline(knotIndex);
 
+        Quaternion zRotation = GetRotation(ratio);
+
+        // Return the rotation that only affects the Z axis of the game object
+        return zRotation;
+    }
+
+    // This is the method to get the rotation given a ratio.
+    public Quaternion GetRotation(float ratio)
+    {
         // Evaluate tangent at this t (ratio)
         float3 tangent = spline.EvaluateTangent(ratio);
 
@@ -150,7 +161,7 @@ public class SplineController : MonoBehaviour
 
     public float GetKnotRatioInSpline(int knotIndex)
     {
-        //Thanks ChatGPT lol
+        //Thanks ChatGPT lol - I didn't find any good way to get the knot ratio.
         // Calculate total spline length
         float totalLength = spline.GetLength();
 
