@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4879506332484149025}
   - component: {fileID: 3906938819488110563}
   - component: {fileID: 4750616436114432465}
-  - component: {fileID: 774972655695037491}
+  - component: {fileID: 697113965549478027}
   - component: {fileID: -1114635761021481889}
   - component: {fileID: 4686768841231996120}
   - component: {fileID: -1994735667306127891}
@@ -55,7 +55,7 @@ MonoBehaviour:
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   markerSelection: {fileID: 4750616436114432465}
   splineController: {fileID: -1114635761021481889}
-  splineMeshController: {fileID: 4686768841231996120}
+  ghostKnotController: {fileID: 697113965549478027}
   markerList: []
 --- !u!114 &4750616436114432465
 MonoBehaviour:
@@ -72,7 +72,7 @@ MonoBehaviour:
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   curveController: {fileID: 3906938819488110563}
   selectedMarkerList: []
---- !u!114 &774972655695037491
+--- !u!114 &697113965549478027
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -81,9 +81,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 7577508812450695204}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9344eb4896964fe2b586e35883bde2c, type: 3}
+  m_Script: {fileID: 11500000, guid: 17a8df197bfe146408e6dd31ec5e3689, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spline:
+    m_EditModeType: 1
+    m_Knots: []
+    m_MetaData: []
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  splineController: {fileID: -1114635761021481889}
 --- !u!114 &-1114635761021481889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,9 +111,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
-  splineContainer: {fileID: -1994735667306127891}
+  splineMeshController: {fileID: 4686768841231996120}
   hoverPointerPrefab: {fileID: 2537828424297882823, guid: 6523249ea3b0c418380976d48d3b88de, type: 3}
   tension: 1
+  ghostKnotController: {fileID: 697113965549478027}
   curveHovered: 0
 --- !u!114 &4686768841231996120
 MonoBehaviour:

@@ -11,13 +11,16 @@ public class SplineController : MonoBehaviour
     private InputManager inputManager;
 
     [SerializeField]
-    private SplineContainer splineContainer;
+    private SplineMeshController splineMeshController;
 
     [SerializeField]
     private GameObject hoverPointerPrefab;
 
     [SerializeField]
     private float tension;
+
+    [SerializeField]
+    private GhostKnotController ghostKnotController;
 
     private Spline spline;
     private GameObject hoverPointer;
@@ -59,7 +62,7 @@ public class SplineController : MonoBehaviour
                 curveHovered = true;
             }
         }
-        else
+        else //Deleting the pointer object and clearing the bool.
         {
             curveHovered = false;
             if (hoverPointer != null)
@@ -67,7 +70,6 @@ public class SplineController : MonoBehaviour
                 Destroy(hoverPointer.gameObject);
             }
         }
-        //Deleting the pointer object and clearing the bool.
     }
 
     public int GetMarkerIndex(float ratio)
@@ -103,6 +105,7 @@ public class SplineController : MonoBehaviour
         BezierKnot knot = new BezierKnot((float3)position);
         spline.Add(knot, TangentMode.AutoSmooth, tension);
         UpdateKnotsRatiosList();
+        splineMeshController.BuildMesh();
     }
 
     public void InsertKnot(Vector3 position, int index)
@@ -111,6 +114,7 @@ public class SplineController : MonoBehaviour
         BezierKnot knot = new BezierKnot((float3)position);
         spline.Insert(index, knot, TangentMode.AutoSmooth, tension);
         UpdateKnotsRatiosList();
+        splineMeshController.BuildMesh();
     }
 
     public void UpdateSpline(List<GameObject> markerList)
@@ -124,12 +128,14 @@ public class SplineController : MonoBehaviour
             spline.SetAutoSmoothTension(i, tension);
         }
         UpdateKnotsRatiosList();
+        splineMeshController.BuildMesh();
     }
 
     public void RemoveKnot(int index)
     {
         spline.RemoveAt(index);
         UpdateKnotsRatiosList();
+        splineMeshController.BuildMesh();
     }
 
     // This is the method to get the rotation given an index.
@@ -202,5 +208,21 @@ public class SplineController : MonoBehaviour
             float ratio = GetKnotRatioInSpline(i);
             knotsRatios.Add(ratio);
         }
+    }
+
+    public void UpdateGhostKnots(List<int> ghostMarkersIndices)
+    {
+        if (ghostMarkersIndices.Count > 0)
+        {
+            // Method to delete knots and reindex the remaining knots
+            ghostKnotController.DeleteKnotsAndTrackIndices(
+                ghostMarkersIndices,
+                out Dictionary<int, int> newIndexMapping
+            );
+
+            // Method to reinsert deleted knots
+            ghostKnotController.ReInsertDeletedKnots(ghostMarkersIndices, newIndexMapping);
+        }
+        splineMeshController.BuildMesh();
     }
 }

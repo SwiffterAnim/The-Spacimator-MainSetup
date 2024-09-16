@@ -42,6 +42,10 @@ public class MarkerController : MonoBehaviour
         {
             VisualDefaultMarker();
         }
+        if (!markerEntity.isSelected && !markerEntity.isHovered && markerEntity.isGhost)
+        {
+            VisualOnGhostMarker();
+        }
     }
 
     public void VisualOnHoveredMarker()
@@ -59,6 +63,12 @@ public class MarkerController : MonoBehaviour
     public void VisualOnSelectedMarker()
     {
         spriteRenderer.color = markerEntity.selectedColor;
+        transform.localScale = markerEntity.defaultScale;
+    }
+
+    public void VisualOnGhostMarker()
+    {
+        spriteRenderer.color = markerEntity.ghostColor;
         transform.localScale = markerEntity.defaultScale;
     }
 
