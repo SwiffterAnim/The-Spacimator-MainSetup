@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: -1994735667306127891}
   - component: {fileID: 3582918200595134695}
   - component: {fileID: 3482590420037247470}
+  - component: {fileID: -5835934169063708381}
   m_Layer: 0
   m_Name: CurveGroup
   m_TagString: Untagged
@@ -57,6 +58,7 @@ MonoBehaviour:
   splineController: {fileID: -1114635761021481889}
   ghostKnotController: {fileID: 697113965549478027}
   markerList: []
+  ghostIndices: 
 --- !u!114 &4750616436114432465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,3 +227,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &-5835934169063708381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7577508812450695204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3864e5a5c461741e69b62e047a707509, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
+  curveController: {fileID: 3906938819488110563}
+  fps: 24

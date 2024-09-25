@@ -72,7 +72,7 @@ public class SplineController : MonoBehaviour
         }
     }
 
-    public int GetMarkerIndex(float ratio)
+    public int GetKnotIndex(float ratio)
     {
         //This checks to see if the value ratio is found in the list and gives you back the index if it does.
         //If not, it gives you a negative number of what is the index the number should be inserted in order to maintain order.

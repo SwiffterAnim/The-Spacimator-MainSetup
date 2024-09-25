@@ -53,6 +53,15 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RecordMouse"",
+                    ""type"": ""Button"",
+                    ""id"": ""8f108217-1315-41b8-8647-1c1e81a4ac55"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -88,6 +97,17 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""DeleteMarker"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0f32f7f5-303e-40b3-aedb-4ae1ade589ca"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RecordMouse"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -99,6 +119,7 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
         m_EditingCurve_AddMarker = m_EditingCurve.FindAction("AddMarker", throwIfNotFound: true);
         m_EditingCurve_MoveMarker = m_EditingCurve.FindAction("MoveMarker", throwIfNotFound: true);
         m_EditingCurve_DeleteMarker = m_EditingCurve.FindAction("DeleteMarker", throwIfNotFound: true);
+        m_EditingCurve_RecordMouse = m_EditingCurve.FindAction("RecordMouse", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -163,6 +184,7 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_EditingCurve_AddMarker;
     private readonly InputAction m_EditingCurve_MoveMarker;
     private readonly InputAction m_EditingCurve_DeleteMarker;
+    private readonly InputAction m_EditingCurve_RecordMouse;
     public struct EditingCurveActions
     {
         private @UserInputActions m_Wrapper;
@@ -170,6 +192,7 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
         public InputAction @AddMarker => m_Wrapper.m_EditingCurve_AddMarker;
         public InputAction @MoveMarker => m_Wrapper.m_EditingCurve_MoveMarker;
         public InputAction @DeleteMarker => m_Wrapper.m_EditingCurve_DeleteMarker;
+        public InputAction @RecordMouse => m_Wrapper.m_EditingCurve_RecordMouse;
         public InputActionMap Get() { return m_Wrapper.m_EditingCurve; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -188,6 +211,9 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
             @DeleteMarker.started += instance.OnDeleteMarker;
             @DeleteMarker.performed += instance.OnDeleteMarker;
             @DeleteMarker.canceled += instance.OnDeleteMarker;
+            @RecordMouse.started += instance.OnRecordMouse;
+            @RecordMouse.performed += instance.OnRecordMouse;
+            @RecordMouse.canceled += instance.OnRecordMouse;
         }
 
         private void UnregisterCallbacks(IEditingCurveActions instance)
@@ -201,6 +227,9 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
             @DeleteMarker.started -= instance.OnDeleteMarker;
             @DeleteMarker.performed -= instance.OnDeleteMarker;
             @DeleteMarker.canceled -= instance.OnDeleteMarker;
+            @RecordMouse.started -= instance.OnRecordMouse;
+            @RecordMouse.performed -= instance.OnRecordMouse;
+            @RecordMouse.canceled -= instance.OnRecordMouse;
         }
 
         public void RemoveCallbacks(IEditingCurveActions instance)
@@ -223,5 +252,6 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
         void OnAddMarker(InputAction.CallbackContext context);
         void OnMoveMarker(InputAction.CallbackContext context);
         void OnDeleteMarker(InputAction.CallbackContext context);
+        void OnRecordMouse(InputAction.CallbackContext context);
     }
 }

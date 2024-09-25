@@ -29,8 +29,6 @@ public class CurveController : MonoBehaviour
     public List<GameObject> markerList = new List<GameObject>();
     public List<int> ghostIndices = new List<int>();
 
-    // private MarkerController markerController;
-
     private void OnEnable()
     {
         userInputActions = GameManager.Instance.GetInputAction();
@@ -72,44 +70,65 @@ public class CurveController : MonoBehaviour
 
     private void AddMarker_performed(InputAction.CallbackContext context)
     {
+        Vector2 markerPosition = Vector2.zero; //Initializing default markerPosition
+
+        if (splineController.curveHovered) //Checks if will add a marker inbetween.
+        {
+            AddMarker_INBETWEEN();
+        }
+        else //If not, then add to the end.
+        {
+            AddMarker_TAIL(markerPosition);
+        }
+    }
+
+    public void AddMarker_TAIL(Vector2 markerPosition)
+    {
+        DeselectAllMarkers();
+        GameObject newMarker;
+        // Vector2 markerPosition;
+
+        if (markerPosition == Vector2.zero) //This basically doesn't allow the user to put markers on (0,0) which he should be allowed. It's a dirty FIX.
+        {
+            markerPosition = inputManager.GetWorldMouseLocation2D();
+        }
+
+        newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
+
+        markerList.Add(newMarker);
+        if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
+        {
+            markerEntity.frameNumber = markerList.Count;
+        }
+
+        splineController.AddKnot(newMarker.transform.position);
+        UpdateGhostMarkers();
+        UpdateALLMarkersRotation();
+    }
+
+    public void AddMarker_INBETWEEN()
+    {
         DeselectAllMarkers();
         GameObject newMarker;
         Vector2 markerPosition;
 
-        if (splineController.curveHovered) //Checks if will add a marker inbetween or at the end.
+        markerPosition = splineController.GetNearestPositionInSpline(out float ratio);
+        newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
+
+        //If curve.Hovered, Insert at specific index.
+        int ratioIndex = splineController.GetKnotIndex(ratio);
+        markerList.Insert(ratioIndex, newMarker);
+
+        //Updating all frame numbers.
+        for (int i = 0; i < markerList.Count; i++)
         {
-            markerPosition = splineController.GetNearestPositionInSpline(out float ratio);
-            newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
-
-            //If curve.Hovered, Insert at specific index.
-            int ratioIndex = splineController.GetMarkerIndex(ratio);
-            markerList.Insert(ratioIndex, newMarker);
-
-            //Updating all frame numbers.
-            for (int i = 0; i < markerList.Count; i++)
+            if (markerList[i].TryGetComponent(out MarkerEntity markerEntity))
             {
-                if (markerList[i].TryGetComponent(out MarkerEntity markerEntity))
-                {
-                    markerEntity.frameNumber = i + 1;
-                }
+                markerEntity.frameNumber = i + 1;
             }
-
-            splineController.InsertKnot(markerPosition, ratioIndex);
-        }
-        else //If not, then add to the end.
-        {
-            markerPosition = inputManager.GetWorldMouseLocation2D();
-            newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
-
-            markerList.Add(newMarker);
-            if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
-            {
-                markerEntity.frameNumber = markerList.Count;
-            }
-
-            splineController.AddKnot(newMarker.transform.position);
         }
 
+        splineController.InsertKnot(markerPosition, ratioIndex);
         UpdateGhostMarkers();
         UpdateALLMarkersRotation();
     }
@@ -200,7 +219,11 @@ public class CurveController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) //Check for SHIFT for GHOSTS.
         {
-            TurnMarkerToGhost(markerSelection.selectedMarkerList);
+            foreach (GameObject marker in markerSelection.selectedMarkerList)
+            {
+                TurnMarkerToGhost(marker);
+            }
+
             UpdateGhostMarkersPosition();
             UpdateALLMarkersRotation();
             DeselectAllMarkers();
@@ -318,21 +341,18 @@ public class CurveController : MonoBehaviour
         }
     }
 
-    private void TurnMarkerToGhost(List<GameObject> selectedMarkerList) //Call this when selected markers are SHIFT-Deleted
+    public void TurnMarkerToGhost(GameObject marker) //Call this when selected markers are SHIFT-Deleted
     {
-        for (int i = 0; i < selectedMarkerList.Count; i++)
+        if (marker.TryGetComponent(out MarkerEntity markerEntity))
         {
-            if (selectedMarkerList[i].TryGetComponent(out MarkerEntity markerEntity))
+            int markerIndex = markerEntity.frameNumber - 1;
+            if (markerIndex > 0 && markerIndex < markerList.Count - 1) //Checking if it's not the first or last marker index.
             {
-                int markerIndex = markerEntity.frameNumber - 1;
-                if (markerIndex > 0 && markerIndex < markerList.Count - 1) //Checking if it's not the first or last marker index.
+                //This turns on isGhost and adds that index to the ghostIndices list.
+                markerEntity.isGhost = true;
+                if (!ghostIndices.Contains(markerIndex))
                 {
-                    //This turns on isGhost and adds that index to the ghostIndices list.
-                    markerEntity.isGhost = true;
-                    if (!ghostIndices.Contains(markerIndex))
-                    {
-                        ghostIndices.Add(markerIndex);
-                    }
+                    ghostIndices.Add(markerIndex);
                 }
             }
         }
