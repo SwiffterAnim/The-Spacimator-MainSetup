@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -22,10 +23,13 @@ public class CurveController : MonoBehaviour
     [SerializeField]
     GhostKnotController ghostKnotController;
 
+    [SerializeField]
+    GameObject UI_FrameInputWindow;
+
     private bool leftMouseButtonIsPressed = false;
     private UserInputActions userInputActions;
     private GameObject selectedMarker;
-    private GameObject selectedObject;
+    public GameObject selectedObject;
     public List<GameObject> markerList = new List<GameObject>();
     public List<int> ghostIndices = new List<int>();
 
@@ -144,6 +148,18 @@ public class CurveController : MonoBehaviour
 
             if (selectedObject.TryGetComponent(out MarkerEntity markerEntity)) //Checks if it's a marker.
             {
+                if (
+                    markerSelection.selectedMarkerList.Contains(selectedObject)
+                    && markerSelection.selectedMarkerList.Count < 2
+                ) //This checks if this marker is ALREADY selected.
+                {
+                    // Update Frame Number.
+                    //Vector3 offsetPosition = selectedObject.transform.position;
+                    //offsetPosition.y += 0.5f;
+                    // Instantiate(UI_FrameInputWindow,selectedObject.transform.position,Quaternion.identity);
+                }
+
+                //else?
                 selectedMarker = selectedObject;
 
                 if (markerSelection.selectedMarkerList.Count == 0) //If the list is empty, select this marker.
@@ -374,5 +390,10 @@ public class CurveController : MonoBehaviour
 
         splineController.UpdateGhostKnots(ghostIndices);
         UpdateGhostMarkersPosition();
+    }
+
+    internal void UpdateFrameNumber(int currentFrameNumber, int updatedFrameNumber)
+    {
+        //
     }
 }

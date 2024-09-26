@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +11,12 @@ public class MarkerController : MonoBehaviour
 
     [SerializeField]
     MarkerEntity markerEntity;
+
+    [SerializeField]
+    TextMeshProUGUI textMeshProUGUI;
+
+    [SerializeField]
+    Canvas canvas;
 
     private Vector2 offsetMouse_This;
     private UserInputActions userInputActions;
@@ -28,8 +35,22 @@ public class MarkerController : MonoBehaviour
         userInputActions.EditingCurve.MoveMarker.performed -= MoveMarker_performed;
     }
 
+    private void Awake()
+    {
+        canvas.worldCamera = Camera.main;
+    }
+
     private void Update()
     {
+        if (!markerEntity.isGhost)
+        {
+            canvas.enabled = true;
+            textMeshProUGUI.text = "" + markerEntity.frameNumber;
+        }
+        else
+        {
+            canvas.enabled = false;
+        }
         if (markerEntity.isHovered)
         {
             VisualOnHoveredMarker();
