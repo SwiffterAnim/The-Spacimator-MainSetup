@@ -46,6 +46,16 @@ public class MarkerController : MonoBehaviour
         {
             VisualOnGhostMarker();
         }
+        if (markerEntity.isPlaying)
+        {
+            VisualOnPlayingMarker();
+        }
+    }
+
+    public void VisualOnPlayingMarker()
+    {
+        spriteRenderer.color = markerEntity.playingColor;
+        transform.localScale = markerEntity.defaultScale;
     }
 
     public void VisualOnHoveredMarker()

@@ -12,6 +12,8 @@ public class MarkerEntity : MonoBehaviour
 
     public Color ghostColor;
 
+    public Color playingColor;
+
     public Vector3 hoveredScale;
 
     public Vector3 defaultScale;
@@ -23,4 +25,6 @@ public class MarkerEntity : MonoBehaviour
     public bool isSelected;
 
     public bool isGhost;
+
+    public bool isPlaying;
 }
