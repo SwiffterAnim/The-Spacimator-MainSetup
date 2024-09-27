@@ -29,11 +29,11 @@ public class CurveController : MonoBehaviour
     private bool leftMouseButtonIsPressed = false;
     private UserInputActions userInputActions;
     private GameObject selectedMarker;
-    public GameObject selectedObject;
+    private GameObject selectedObject;
     public List<GameObject> markerList = new List<GameObject>();
     public List<int> ghostIndices = new List<int>();
 
-    private void OnEnable()
+    private void Start()
     {
         userInputActions = GameManager.Instance.GetInputAction();
         userInputActions.EditingCurve.AddMarker.performed += AddMarker_performed;
@@ -209,7 +209,7 @@ public class CurveController : MonoBehaviour
         }
     }
 
-    private void SelectMarker(MarkerEntity markerEntity, GameObject selectedMarker)
+    public void SelectMarker(MarkerEntity markerEntity, GameObject selectedMarker)
     {
         int index = markerEntity.frameNumber - 1;
         markerEntity.isSelected = true;

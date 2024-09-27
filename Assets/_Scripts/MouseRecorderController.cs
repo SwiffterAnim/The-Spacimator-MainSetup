@@ -22,11 +22,12 @@ public class MouseRecorderController : MonoBehaviour
     private int fps;
     private List<Marker> recordedPositions = new List<Marker>();
 
-    private void OnEnable()
+    private void Start()
     {
         userInputActions = GameManager.Instance.GetInputAction();
         userInputActions.EditingCurve.RecordMouse.performed += RecordMouse_Performed;
         userInputActions.EditingCurve.RecordMouse.canceled += RecordMouse_Canceled;
+        fps = (int)(FPS);
     }
 
     private void OnDisable()
@@ -35,16 +36,11 @@ public class MouseRecorderController : MonoBehaviour
         userInputActions.EditingCurve.RecordMouse.canceled -= RecordMouse_Canceled;
     }
 
-    private void Start()
-    {
-        fps = (int)(FPS);
-    }
-
     private void Update()
     {
         if (recording)
         {
-            timeSinceLastRecording += Time.deltaTime;
+            timeSinceLastRecording += Time.unscaledDeltaTime;
             {
                 if (timeSinceLastRecording >= recordInterval)
                 {
@@ -53,7 +49,7 @@ public class MouseRecorderController : MonoBehaviour
                         position: inputManager.GetWorldMouseLocation2D()
                     );
                     recordedPositions.Add(marker);
-                    timeSinceLastRecording = 0f;
+                    timeSinceLastRecording -= recordInterval;
                 }
             }
         }

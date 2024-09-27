@@ -10,7 +10,7 @@ public class MarkerSelection : MonoBehaviour
     [SerializeField]
     CurveController curveController;
 
-    private RaycastHit2D[] mouseRayCastHitArray;
+    public RaycastHit2D[] mouseRayCastHitArray = new RaycastHit2D[0];
     private List<GameObject> markersMouseRayCastHits = new List<GameObject>();
     private GameObject hoveredMarker;
 

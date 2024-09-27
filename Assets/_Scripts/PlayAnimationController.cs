@@ -29,7 +29,7 @@ public class PlayAnimationController : MonoBehaviour
     {
         if (isPlaying && animatedObject != null)
         {
-            timeSinceLastRecording += Time.deltaTime;
+            timeSinceLastRecording += Time.unscaledDeltaTime;
 
             if (timeSinceLastRecording >= recordInterval) //fps
             {
@@ -39,8 +39,6 @@ public class PlayAnimationController : MonoBehaviour
                     .transform
                     .position;
 
-                timeSinceLastRecording = 0f;
-
                 //This is to check if we're on the last frame, so we can keep looping the animation.
                 if (i >= curveController.markerList.Count - 1)
                 {
@@ -48,7 +46,15 @@ public class PlayAnimationController : MonoBehaviour
                 }
                 else
                 {
-                    i++;
+                    while (timeSinceLastRecording >= recordInterval)
+                    {
+                        i++;
+                        timeSinceLastRecording -= recordInterval;
+                    }
+                    if (i >= curveController.markerList.Count)
+                    {
+                        i = 0;
+                    }
                 }
             }
         }
