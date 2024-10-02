@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -34,6 +32,10 @@ public class SplineMeshController : MonoBehaviour
     private List<Vector3> mesh_vertsP2 = new List<Vector3>();
     private Mesh mesh;
 
+    // This subdivides the spline between knots and adds *resolution* amount of vertices inbetween each.
+    //It's a waste because if the knots are super close they are still subdivided by the same amount of vertices for the mesh.
+    //Would probably be best if it took the whole length of the curve and increased the number of vertices the bigger the curve.
+    //Or added more resolution for the knots that are far away and less if they're close together.
     private void GetVerts()
     {
         mesh_vertsP1.Clear();
@@ -74,6 +76,7 @@ public class SplineMeshController : MonoBehaviour
 
     private void SampleSplineWitdh(float ratio, out Vector3 p1, out Vector3 p2)
     {
+        //Given a ration Evaluate spits out a position, a forward direction and an upVector.
         splineContainer.Spline.Evaluate(ratio, out position, out forward, out upVector);
 
         Vector3 upVector3 = (Vector3)upVector;

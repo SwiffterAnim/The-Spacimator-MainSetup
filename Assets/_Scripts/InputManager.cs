@@ -7,6 +7,7 @@ public class InputManager : MonoBehaviour
     private Vector2 mousePosition;
     private RaycastHit2D[] mouseHitAllArray;
 
+    //Not sure if this isn't returning the same as Input.mousePosition lol
     public Vector2 GetWorldMouseLocation2D()
     {
         mousePosition = Mouse.current.position.ReadValue();
