@@ -44,6 +44,42 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DeleteMarker"",
+                    ""type"": ""Button"",
+                    ""id"": ""67313b06-28ea-4ff9-b884-74dc48e61557"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RecordMouse"",
+                    ""type"": ""Button"",
+                    ""id"": ""8f108217-1315-41b8-8647-1c1e81a4ac55"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""AcceptChange"",
+                    ""type"": ""Button"",
+                    ""id"": ""6b904915-fb93-4ed5-80ac-ed85be4d1920"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CancelChange"",
+                    ""type"": ""Button"",
+                    ""id"": ""5d51e75e-1ca3-4e8a-aa59-b5be666ec56b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -68,6 +104,50 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""MoveMarker"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""409d3c1a-afdd-4ef0-85a0-a83d109379af"",
+                    ""path"": ""<Keyboard>/backspace"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DeleteMarker"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0f32f7f5-303e-40b3-aedb-4ae1ade589ca"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RecordMouse"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1f4fcd31-d793-49b3-a000-d92a7d45aab7"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AcceptChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2c350c85-eba8-4891-ad69-27cdbb0f161d"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CancelChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -78,6 +158,10 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
         m_EditingCurve = asset.FindActionMap("EditingCurve", throwIfNotFound: true);
         m_EditingCurve_AddMarker = m_EditingCurve.FindAction("AddMarker", throwIfNotFound: true);
         m_EditingCurve_MoveMarker = m_EditingCurve.FindAction("MoveMarker", throwIfNotFound: true);
+        m_EditingCurve_DeleteMarker = m_EditingCurve.FindAction("DeleteMarker", throwIfNotFound: true);
+        m_EditingCurve_RecordMouse = m_EditingCurve.FindAction("RecordMouse", throwIfNotFound: true);
+        m_EditingCurve_AcceptChange = m_EditingCurve.FindAction("AcceptChange", throwIfNotFound: true);
+        m_EditingCurve_CancelChange = m_EditingCurve.FindAction("CancelChange", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -141,12 +225,20 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
     private List<IEditingCurveActions> m_EditingCurveActionsCallbackInterfaces = new List<IEditingCurveActions>();
     private readonly InputAction m_EditingCurve_AddMarker;
     private readonly InputAction m_EditingCurve_MoveMarker;
+    private readonly InputAction m_EditingCurve_DeleteMarker;
+    private readonly InputAction m_EditingCurve_RecordMouse;
+    private readonly InputAction m_EditingCurve_AcceptChange;
+    private readonly InputAction m_EditingCurve_CancelChange;
     public struct EditingCurveActions
     {
         private @UserInputActions m_Wrapper;
         public EditingCurveActions(@UserInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @AddMarker => m_Wrapper.m_EditingCurve_AddMarker;
         public InputAction @MoveMarker => m_Wrapper.m_EditingCurve_MoveMarker;
+        public InputAction @DeleteMarker => m_Wrapper.m_EditingCurve_DeleteMarker;
+        public InputAction @RecordMouse => m_Wrapper.m_EditingCurve_RecordMouse;
+        public InputAction @AcceptChange => m_Wrapper.m_EditingCurve_AcceptChange;
+        public InputAction @CancelChange => m_Wrapper.m_EditingCurve_CancelChange;
         public InputActionMap Get() { return m_Wrapper.m_EditingCurve; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -162,6 +254,18 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
             @MoveMarker.started += instance.OnMoveMarker;
             @MoveMarker.performed += instance.OnMoveMarker;
             @MoveMarker.canceled += instance.OnMoveMarker;
+            @DeleteMarker.started += instance.OnDeleteMarker;
+            @DeleteMarker.performed += instance.OnDeleteMarker;
+            @DeleteMarker.canceled += instance.OnDeleteMarker;
+            @RecordMouse.started += instance.OnRecordMouse;
+            @RecordMouse.performed += instance.OnRecordMouse;
+            @RecordMouse.canceled += instance.OnRecordMouse;
+            @AcceptChange.started += instance.OnAcceptChange;
+            @AcceptChange.performed += instance.OnAcceptChange;
+            @AcceptChange.canceled += instance.OnAcceptChange;
+            @CancelChange.started += instance.OnCancelChange;
+            @CancelChange.performed += instance.OnCancelChange;
+            @CancelChange.canceled += instance.OnCancelChange;
         }
 
         private void UnregisterCallbacks(IEditingCurveActions instance)
@@ -172,6 +276,18 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
             @MoveMarker.started -= instance.OnMoveMarker;
             @MoveMarker.performed -= instance.OnMoveMarker;
             @MoveMarker.canceled -= instance.OnMoveMarker;
+            @DeleteMarker.started -= instance.OnDeleteMarker;
+            @DeleteMarker.performed -= instance.OnDeleteMarker;
+            @DeleteMarker.canceled -= instance.OnDeleteMarker;
+            @RecordMouse.started -= instance.OnRecordMouse;
+            @RecordMouse.performed -= instance.OnRecordMouse;
+            @RecordMouse.canceled -= instance.OnRecordMouse;
+            @AcceptChange.started -= instance.OnAcceptChange;
+            @AcceptChange.performed -= instance.OnAcceptChange;
+            @AcceptChange.canceled -= instance.OnAcceptChange;
+            @CancelChange.started -= instance.OnCancelChange;
+            @CancelChange.performed -= instance.OnCancelChange;
+            @CancelChange.canceled -= instance.OnCancelChange;
         }
 
         public void RemoveCallbacks(IEditingCurveActions instance)
@@ -193,5 +309,9 @@ public partial class @UserInputActions: IInputActionCollection2, IDisposable
     {
         void OnAddMarker(InputAction.CallbackContext context);
         void OnMoveMarker(InputAction.CallbackContext context);
+        void OnDeleteMarker(InputAction.CallbackContext context);
+        void OnRecordMouse(InputAction.CallbackContext context);
+        void OnAcceptChange(InputAction.CallbackContext context);
+        void OnCancelChange(InputAction.CallbackContext context);
     }
 }
