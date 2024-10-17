@@ -14,11 +14,11 @@ public class InputManager : MonoBehaviour
     private float timeLimitToActivateDoubleClick = 0.45f;
 
     [Header("Events")]
-    public GameEvent onDoubleClickPerformed;
-    public GameEvent onRightClickPerformed;
-    public GameEvent onLeftClickPerformed;
-    public GameEvent onLeftClickCanceled;
-    public GameEvent onDeletePerformed;
+    public GameEventSystem onDoubleClickPerformed;
+    public GameEventSystem onRightClickPerformed;
+    public GameEventSystem onLeftClickPerformed;
+    public GameEventSystem onLeftClickCanceled;
+    public GameEventSystem onDeletePerformed;
 
     private void Start()
     {
@@ -133,4 +133,9 @@ public class InputManager : MonoBehaviour
             return null;
         }
     }
+}
+
+public struct LeftButtonClickEvent
+{
+    
 }

@@ -4,23 +4,15 @@ using UnityEngine.Splines;
 
 public class CurveController : MonoBehaviour
 {
-    [SerializeField]
-    GameObject marker;
+    [SerializeField] private GameObject marker;
 
-    [SerializeField]
-    InputManager inputManager;
+    [SerializeField] private InputManager inputManager;
 
-    [SerializeField]
-    MarkerSelection markerSelection;
+    [SerializeField] private MarkerSelection markerSelection;
 
-    [SerializeField]
-    SplineController splineController;
+    [SerializeField] private GhostKnotController ghostKnotController;
 
-    [SerializeField]
-    GhostKnotController ghostKnotController;
-
-    [SerializeField]
-    GameObject UI_FrameInputWindow;
+    [SerializeField] private GameObject UI_FrameInputWindow;
 
     private bool leftMouseButtonIsPressed = false;
     private GameObject selectedMarker;
@@ -32,7 +24,7 @@ public class CurveController : MonoBehaviour
     {
         if (markerSelection.selectedMarkerList != null && leftMouseButtonIsPressed)
         {
-            splineController.UpdateSpline(markerList);
+            var result = GameEventSystem.Intance.Raise<UpdateSplineEvent, bool>(new UpdateSplineEvent(markerList));
             UpdateGhostMarkers();
             //Update rotation of markers.
             UpdateALLMarkersRotation();
@@ -59,7 +51,8 @@ public class CurveController : MonoBehaviour
         GameObject newMarker;
         // Vector2 markerPosition;
 
-        if (markerPosition == Vector2.zero) //This basically doesn't allow the user to put markers on (0,0) which he should be allowed. It's a dirty FIX.
+        if (markerPosition ==
+            Vector2.zero) //This basically doesn't allow the user to put markers on (0,0) which he should be allowed. It's a dirty FIX.
         {
             markerPosition = inputManager.GetWorldMouseLocation2D();
         }
@@ -126,6 +119,7 @@ public class CurveController : MonoBehaviour
                     //offsetPosition.y += 0.5f;
                     // Instantiate(UI_FrameInputWindow,selectedObject.transform.position,Quaternion.identity);
                 }
+
                 selectedMarker = selectedObject;
 
                 if (markerSelection.selectedMarkerList.Count == 0) //If the list is empty, select this marker.
@@ -134,9 +128,11 @@ public class CurveController : MonoBehaviour
                 }
                 else
                 {
-                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) //If it isn't empty check if shift is clicked.
+                    if (Input.GetKey(KeyCode.LeftShift) ||
+                        Input.GetKey(KeyCode.RightShift)) //If it isn't empty check if shift is clicked.
                     {
-                        if (markerSelection.selectedMarkerList.Contains(selectedMarker)) //If marker already in list, remove it.
+                        if (markerSelection.selectedMarkerList
+                            .Contains(selectedMarker)) //If marker already in list, remove it.
                         {
                             DeselectMarker(markerEntity, selectedMarker);
                         }
@@ -218,13 +214,14 @@ public class CurveController : MonoBehaviour
             {
                 if (
                     markerSelection
-                        .selectedMarkerList[i]
-                        .TryGetComponent(out MarkerEntity markerEntity)
+                    .selectedMarkerList[i]
+                    .TryGetComponent(out MarkerEntity markerEntity)
                 )
                 {
                     indexToDelete.Add(markerEntity.frameNumber - 1);
                 }
             }
+
             indexToDelete.Sort();
             indexToDelete.Reverse();
 
@@ -282,7 +279,8 @@ public class CurveController : MonoBehaviour
         //I'll use this now to update the rotation of the markers, but this will also update the position/creation of ghost markers maybe.
     }
 
-    private void UpdateGhostMarkers() //Need to call this every time a marker is deleted, and when a marker is added on the curve.
+    private void
+        UpdateGhostMarkers() //Need to call this every time a marker is deleted, and when a marker is added on the curve.
     {
         UpdateGhostIndices();
         splineController.UpdateGhostKnots(ghostIndices);
@@ -328,7 +326,8 @@ public class CurveController : MonoBehaviour
         if (marker.TryGetComponent(out MarkerEntity markerEntity))
         {
             int markerIndex = markerEntity.frameNumber - 1;
-            if (markerIndex > 0 && markerIndex < markerList.Count - 1) //Checking if it's not the first or last marker index.
+            if (markerIndex > 0 &&
+                markerIndex < markerList.Count - 1) //Checking if it's not the first or last marker index.
             {
                 //This turns on isGhost and adds that index to the ghostIndices list.
                 markerEntity.isGhost = true;
@@ -349,6 +348,7 @@ public class CurveController : MonoBehaviour
         {
             markerEntity.isGhost = false;
         }
+
         if (ghostIndices.Contains(index))
         {
             ghostIndices.Remove(index);

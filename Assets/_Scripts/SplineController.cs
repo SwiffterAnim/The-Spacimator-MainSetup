@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -5,20 +6,15 @@ using UnityEngine.Splines;
 
 public class SplineController : MonoBehaviour
 {
-    [SerializeField]
-    private InputManager inputManager;
+    [SerializeField] private InputManager inputManager;
 
-    [SerializeField]
-    private SplineMeshController splineMeshController;
+    [SerializeField] private SplineMeshController splineMeshController;
 
-    [SerializeField]
-    private GameObject hoverPointerPrefab;
+    [SerializeField] private GameObject hoverPointerPrefab;
 
-    [SerializeField]
-    private float tension;
+    [SerializeField] private float tension;
 
-    [SerializeField]
-    private GhostKnotController ghostKnotController;
+    [SerializeField] private GhostKnotController ghostKnotController;
 
     private Spline spline;
     private GameObject hoverPointer;
@@ -28,6 +24,12 @@ public class SplineController : MonoBehaviour
     private void Start()
     {
         spline = GetComponent<SplineContainer>().Spline;
+        GameEventSystem.Intance.RegisterListener<UpdateSplineEvent, bool>(UpdateSpline);
+    }
+
+    private void OnDestroy()
+    {
+        GameEventSystem.Intance.UnregisterListener<UpdateSplineEvent, bool>(UpdateSpline);
     }
 
     private void Update()
@@ -56,6 +58,7 @@ public class SplineController : MonoBehaviour
                         Quaternion.identity
                     );
                 }
+
                 hoverPointer.transform.position = hoverPosition;
                 curveHovered = true;
             }
@@ -115,8 +118,9 @@ public class SplineController : MonoBehaviour
         splineMeshController.BuildMesh();
     }
 
-    public void UpdateSpline(List<GameObject> markerList)
+    public bool UpdateSpline(UpdateSplineEvent updateSplineEvent)
     {
+        var markerList = updateSplineEvent.MarkersList;
         for (int i = 0; i < markerList.Count; i++)
         {
             //Not sure this is the way..
@@ -125,8 +129,10 @@ public class SplineController : MonoBehaviour
             spline.SetKnot(i, iKnot);
             spline.SetAutoSmoothTension(i, tension);
         }
+
         UpdateKnotsRatiosList();
         splineMeshController.BuildMesh();
+        return true;
     }
 
     public void RemoveKnot(int index)
@@ -221,6 +227,19 @@ public class SplineController : MonoBehaviour
             // Method to reinsert deleted knots
             ghostKnotController.ReInsertDeletedKnots(ghostMarkersIndices, newIndexMapping);
         }
+
         splineMeshController.BuildMesh();
     }
 }
+
+//========== EVENTS =============
+public struct UpdateSplineEvent
+{
+    public List<GameObject> MarkersList { get; private set; }
+
+    public UpdateSplineEvent(List<GameObject> markersList)
+    {
+        MarkersList = markersList;
+    }
+}
+

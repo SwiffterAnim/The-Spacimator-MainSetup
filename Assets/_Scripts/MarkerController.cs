@@ -26,6 +26,7 @@ public class MarkerController : MonoBehaviour
         canvas.worldCamera = Camera.main;
     }
 
+    //TODO: change this to a arbitrary method like "MarkerUpdate" and call this from the Update() method of MarkersManager
     private void Update()
     {
         if (leftMouseButtonIsPressed && markerEntity.isSelected)
