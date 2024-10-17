@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,16 +15,26 @@ public class InputManager : MonoBehaviour
 
     [Header("Events")]
     public GameEvent onDoubleClickPerformed;
+    public GameEvent onRightClickPerformed;
+    public GameEvent onLeftClickPerformed;
+    public GameEvent onLeftClickCanceled;
+    public GameEvent onDeletePerformed;
 
     private void Start()
     {
         userInputActions = GameManager.Instance.GetInputAction();
         userInputActions.EditingCurve.MoveMarker.performed += MoveMarker_performed;
+        userInputActions.EditingCurve.MoveMarker.canceled += MoveMarker_canceled;
+        userInputActions.EditingCurve.AddMarker.performed += AddMarker_performed;
+        userInputActions.EditingCurve.DeleteMarker.performed += DeleteMarker_performed;
     }
 
     private void OnDisable()
     {
         userInputActions.EditingCurve.MoveMarker.performed -= MoveMarker_performed;
+        userInputActions.EditingCurve.MoveMarker.canceled -= MoveMarker_canceled;
+        userInputActions.EditingCurve.AddMarker.performed -= AddMarker_performed;
+        userInputActions.EditingCurve.DeleteMarker.performed -= DeleteMarker_performed;
     }
 
     private void Update()
@@ -50,6 +60,8 @@ public class InputManager : MonoBehaviour
 
     private void MoveMarker_performed(InputAction.CallbackContext context)
     {
+        onLeftClickPerformed.Raise(this, true);
+
         if (!firstOfTwoClicked)
         {
             firstOfTwoClicked = true;
@@ -58,6 +70,21 @@ public class InputManager : MonoBehaviour
         {
             secondOfTwoClicked = true;
         }
+    }
+
+    private void MoveMarker_canceled(InputAction.CallbackContext context)
+    {
+        onLeftClickCanceled.Raise(this, true);
+    }
+
+    private void AddMarker_performed(InputAction.CallbackContext context)
+    {
+        onRightClickPerformed.Raise(this, true);
+    }
+
+    private void DeleteMarker_performed(InputAction.CallbackContext context)
+    {
+        onDeletePerformed.Raise(this, true);
     }
 
     //Not sure if this isn't returning the same as Input.mousePosition lol

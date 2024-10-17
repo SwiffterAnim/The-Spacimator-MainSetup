@@ -1,9 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Splines;
 
 public class CurveController : MonoBehaviour
@@ -27,52 +23,23 @@ public class CurveController : MonoBehaviour
     GameObject UI_FrameInputWindow;
 
     private bool leftMouseButtonIsPressed = false;
-    private UserInputActions userInputActions;
     private GameObject selectedMarker;
     private GameObject selectedObject;
     public List<GameObject> markerList = new List<GameObject>();
     public List<int> ghostIndices = new List<int>();
 
-    private void Start()
-    {
-        userInputActions = GameManager.Instance.GetInputAction();
-        userInputActions.EditingCurve.AddMarker.performed += AddMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.performed += MoveMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.canceled += MoveMarker_canceled;
-        userInputActions.EditingCurve.DeleteMarker.performed += DeleteMarker_performed;
-    }
-
-    private void OnDisable()
-    {
-        userInputActions.EditingCurve.AddMarker.performed -= AddMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.performed -= MoveMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.canceled -= MoveMarker_canceled;
-        userInputActions.EditingCurve.DeleteMarker.performed -= DeleteMarker_performed;
-    }
-
     private void Update()
     {
         if (markerSelection.selectedMarkerList != null && leftMouseButtonIsPressed)
         {
-            for (int i = 0; i < markerSelection.selectedMarkerList.Count; i++)
-            {
-                if (
-                    markerSelection
-                        .selectedMarkerList[i]
-                        .TryGetComponent(out MarkerController markerController)
-                )
-                {
-                    markerController.MoveMarkerWithMouse(inputManager.GetWorldMouseLocation2D());
-                    splineController.UpdateSpline(markerList);
-                }
-            }
+            splineController.UpdateSpline(markerList);
             UpdateGhostMarkers();
             //Update rotation of markers.
             UpdateALLMarkersRotation();
         }
     }
 
-    private void AddMarker_performed(InputAction.CallbackContext context)
+    public void AddMarker()
     {
         Vector2 markerPosition = Vector2.zero; //Initializing default markerPosition
 
@@ -110,7 +77,7 @@ public class CurveController : MonoBehaviour
         UpdateALLMarkersRotation();
     }
 
-    public void AddMarker_INBETWEEN()
+    private void AddMarker_INBETWEEN()
     {
         DeselectAllMarkers();
         GameObject newMarker;
@@ -137,7 +104,7 @@ public class CurveController : MonoBehaviour
         UpdateALLMarkersRotation();
     }
 
-    private void MoveMarker_performed(InputAction.CallbackContext context)
+    public void MoveMarker_performed()
     {
         leftMouseButtonIsPressed = true;
 
@@ -148,6 +115,7 @@ public class CurveController : MonoBehaviour
 
             if (selectedObject.TryGetComponent(out MarkerEntity markerEntity)) //Checks if it's a marker.
             {
+                //Old way of checking for double click.
                 if (
                     markerSelection.selectedMarkerList.Contains(selectedObject)
                     && markerSelection.selectedMarkerList.Count < 2
@@ -158,8 +126,6 @@ public class CurveController : MonoBehaviour
                     //offsetPosition.y += 0.5f;
                     // Instantiate(UI_FrameInputWindow,selectedObject.transform.position,Quaternion.identity);
                 }
-
-                //else?
                 selectedMarker = selectedObject;
 
                 if (markerSelection.selectedMarkerList.Count == 0) //If the list is empty, select this marker.
@@ -179,7 +145,7 @@ public class CurveController : MonoBehaviour
                             SelectMarker(markerEntity, selectedMarker);
                         }
                     }
-                    else //if list is not empty and shit is NOT clicked
+                    else //if list is not empty and shift is NOT clicked
                     {
                         if (markerSelection.selectedMarkerList.Contains(selectedMarker)) //If this marker is selected.
                         {
@@ -198,6 +164,14 @@ public class CurveController : MonoBehaviour
         {
             DeselectAllMarkers();
         }
+    }
+
+    public void MoveMarker_canceled()
+    {
+        leftMouseButtonIsPressed = false;
+
+        selectedMarker = null;
+        selectedObject = null;
     }
 
     private void DeselectAllMarkers()
@@ -223,15 +197,7 @@ public class CurveController : MonoBehaviour
         markerSelection.selectedMarkerList.Remove(selectedMarker);
     }
 
-    private void MoveMarker_canceled(InputAction.CallbackContext context)
-    {
-        leftMouseButtonIsPressed = false;
-
-        selectedMarker = null;
-        selectedObject = null;
-    }
-
-    private void DeleteMarker_performed(InputAction.CallbackContext context)
+    public void DeleteMarker_performed()
     {
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) //Check for SHIFT for GHOSTS.
         {

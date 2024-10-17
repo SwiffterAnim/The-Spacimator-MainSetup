@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -102,7 +100,7 @@ public class SplineController : MonoBehaviour
     public void AddKnot(Vector3 position)
     {
         //Used by Curve Controller to add a knot at the end.
-        BezierKnot knot = new BezierKnot((float3)position);
+        BezierKnot knot = new((float3)position);
         spline.Add(knot, TangentMode.AutoSmooth, tension);
         UpdateKnotsRatiosList();
         splineMeshController.BuildMesh();
