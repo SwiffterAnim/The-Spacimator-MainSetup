@@ -44,3 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e14661e090178492eafa551cc9838bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onDoubleClickPerformed: {fileID: 11400000, guid: c8387b73a0fa84475a3bb61a0d2d8aa0, type: 2}
+  onRightClickPerformed: {fileID: 11400000, guid: 4e36b7256dcb24deeb676178355f56f7, type: 2}
+  onLeftClickPerformed: {fileID: 11400000, guid: e603abc07ab80449a84852a97e7a3f19, type: 2}
+  onLeftClickCanceled: {fileID: 11400000, guid: 936f29fa273904735b2db42517b349a4, type: 2}
+  onDeletePerformed: {fileID: 11400000, guid: 65f80cbcd60a8420dad559593504cd16, type: 2}

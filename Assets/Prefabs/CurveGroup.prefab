@@ -609,9 +609,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   marker: {fileID: 2140980353681601456, guid: d835d243d698e4398a39bb2cb8f154d7, type: 3}
-  inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
-  markerSelection: {fileID: 4750616436114432465}
-  splineController: {fileID: -1114635761021481889}
   ghostKnotController: {fileID: 697113965549478027}
   UI_FrameInputWindow: {fileID: 3692250928063931522, guid: 30518a944bbea45178557e93394a2398, type: 3}
   markerList: []
@@ -630,7 +627,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   curveController: {fileID: 3906938819488110563}
-  selectedMarkerList: []
 --- !u!114 &697113965549478027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -674,7 +670,6 @@ MonoBehaviour:
   hoverPointerPrefab: {fileID: 2537828424297882823, guid: 6523249ea3b0c418380976d48d3b88de, type: 3}
   tension: 1
   ghostKnotController: {fileID: 697113965549478027}
-  curveHovered: 0
 --- !u!114 &4686768841231996120
 MonoBehaviour:
   m_ObjectHideFlags: 0

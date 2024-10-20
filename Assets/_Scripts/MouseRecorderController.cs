@@ -20,7 +20,7 @@ public class MouseRecorderController : MonoBehaviour
     private float recordInterval = 1f / 24f;
     private float timeSinceLastRecording = 0f;
     private int fps;
-    private List<Marker> recordedPositions = new List<Marker>();
+    private List<MarkerDataStruct> recordedPositions = new List<MarkerDataStruct>();
 
     private void Start()
     {
@@ -44,9 +44,9 @@ public class MouseRecorderController : MonoBehaviour
             {
                 if (timeSinceLastRecording >= recordInterval)
                 {
-                    Marker marker = new Marker(
+                    MarkerDataStruct marker = new MarkerDataStruct(
                         isKey: true,
-                        position: inputManager.GetWorldMouseLocation2D()
+                        markerPosition: Input.mousePosition
                     );
                     recordedPositions.Add(marker);
                     timeSinceLastRecording -= recordInterval;
@@ -67,26 +67,25 @@ public class MouseRecorderController : MonoBehaviour
 
         //Calculate which Marker is a ghost (AFTER recording positions) depending on fps and change their
 
-        foreach (Marker marker in recordedPositions)
+        if (recordedPositions.Count > 0)
         {
-            curveController.AddMarker_TAIL(marker.position);
+            GameEventSystem.Instance.Raise<onRecordingFinishedEvent>(
+                new onRecordingFinishedEvent(recordedPositions)
+            );
         }
 
         recordedPositions.Clear();
     }
 }
 
-//Creating a Struct Marker to keep info about the marker. Like if it's a ghost and it's position. What's the different between using this and the Marker Entity?
-//And perhaps I should use this Marker struct in other parts of my script too, since it's always useful info.
-public struct Marker
+//====================    EVENTS    ====================
+public struct onRecordingFinishedEvent
 {
-    public bool isKey;
-    public Vector2 position;
+    public List<MarkerDataStruct> recordedMarkers { get; private set; }
 
-    public Marker(bool isKey, Vector2 position)
+    public onRecordingFinishedEvent(List<MarkerDataStruct> recordedMarkers)
     {
-        this.isKey = isKey;
-        this.position = position;
+        this.recordedMarkers = recordedMarkers;
     }
 }
 

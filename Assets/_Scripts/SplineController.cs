@@ -1,6 +1,5 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -24,52 +23,48 @@ public class SplineController : MonoBehaviour
 
     private Spline spline;
     private GameObject hoverPointer;
-    private List<float> knotsRatios = new List<float>();
-    public bool curveHovered;
+    private List<float> knotsRatios = new List<float>(); //TODO turn this into a dictionary?
 
     private void Start()
     {
         spline = GetComponent<SplineContainer>().Spline;
+
+        //=======   Registering Events.   =======
+        GameEventSystem.Instance.RegisterListener<UpdateSplineEvent, bool>(UpdateSpline);
+        GameEventSystem.Instance.RegisterListener<InsertMarkerEvent, MarkerDataStruct>(
+            InsertKnotHandler
+        );
+        GameEventSystem.Instance.RegisterListener<AddMarkerEvent>(AddKnot);
+        GameEventSystem.Instance.RegisterListener<
+            UpdateMarkerRotationEvent,
+            Dictionary<int, Quaternion>
+        >(GetKnotsRotation);
+        GameEventSystem.Instance.RegisterListener<DeleteSelectedEvent>(RemoveKnots);
+        GameEventSystem.Instance.RegisterListener<UpdateGhostsEvent>(UpdateGhostKnots);
+        GameEventSystem.Instance.RegisterListener<OnHoveringCurveEvent>(SplinePointerController);
+        GameEventSystem.Instance.RegisterListener<OnHoveringCurveCanceledEvent>(
+            SplinePointerDestroyer
+        );
     }
 
-    private void Update()
+    private void OnDestroy()
     {
-        //Check for mouseRayCastHits in 3D, because Mesh is a 3D object.
-        RaycastHit[] mouseRayCastHit = inputManager.DetectALL_MouseRaycastHit3D();
-        if (mouseRayCastHit != null)
-        {
-            //Checking if for some reason there's more than one 3D object detected.
-            if (mouseRayCastHit.Length > 1)
-            {
-                Debug.LogError("Two different 3D objects detected.");
-            }
-            //Checking if it's a curve mesh.
-            else if (
-                mouseRayCastHit[0].collider.gameObject.TryGetComponent(out SplineController SC)
-            )
-            {
-                //Instantiating a pointer for the player to know visually where the nearest point in the spline is.
-                Vector3 hoverPosition = GetNearestPositionInSpline(out float ratio);
-                if (hoverPointer == null)
-                {
-                    hoverPointer = Instantiate(
-                        hoverPointerPrefab,
-                        hoverPosition,
-                        Quaternion.identity
-                    );
-                }
-                hoverPointer.transform.position = hoverPosition;
-                curveHovered = true;
-            }
-        }
-        else //Deleting the pointer object and clearing the bool.
-        {
-            curveHovered = false;
-            if (hoverPointer != null)
-            {
-                Destroy(hoverPointer.gameObject);
-            }
-        }
+        //=======   Unregistering Events.   =======
+        GameEventSystem.Instance.UnregisterListener<UpdateSplineEvent, bool>(UpdateSpline);
+        GameEventSystem.Instance.UnregisterListener<InsertMarkerEvent, MarkerDataStruct>(
+            InsertKnotHandler
+        );
+        GameEventSystem.Instance.UnregisterListener<AddMarkerEvent>(AddKnot);
+        GameEventSystem.Instance.UnregisterListener<
+            UpdateMarkerRotationEvent,
+            Dictionary<int, Quaternion>
+        >(GetKnotsRotation);
+        GameEventSystem.Instance.UnregisterListener<DeleteSelectedEvent>(RemoveKnots);
+        GameEventSystem.Instance.UnregisterListener<UpdateGhostsEvent>(UpdateGhostKnots);
+        GameEventSystem.Instance.UnregisterListener<OnHoveringCurveEvent>(SplinePointerController);
+        GameEventSystem.Instance.UnregisterListener<OnHoveringCurveCanceledEvent>(
+            SplinePointerDestroyer
+        );
     }
 
     public int GetKnotIndex(float ratio)
@@ -86,39 +81,44 @@ public class SplineController : MonoBehaviour
         return index;
     }
 
-    public Vector3 GetNearestPositionInSpline(out float ratio)
+    public Vector3 GetNearestPositionInSpline(Vector3 mouseWorldPosition, out float ratio)
     {
-        Vector3 mouseWorldPosition = inputManager.GetWorldMouseLocation2D();
-        float3 hoverPosition;
         SplineUtility.GetNearestPoint(
             spline,
             (float3)mouseWorldPosition,
-            out hoverPosition,
+            out float3 hoverPosition,
             out ratio
         );
         return (Vector3)hoverPosition;
     }
 
-    public void AddKnot(Vector3 position)
+    //Handles both Adding and Inserting knots in any position.
+    public void AddKnot(AddMarkerEvent addMarkerEvent)
     {
-        //Used by Curve Controller to add a knot at the end.
-        BezierKnot knot = new BezierKnot((float3)position);
-        spline.Add(knot, TangentMode.AutoSmooth, tension);
+        float3 knotPosition = addMarkerEvent.position;
+        int knotIndex = addMarkerEvent.index;
+
+        BezierKnot knot = new(knotPosition);
+        spline.Insert(knotIndex, knot, TangentMode.AutoSmooth, tension);
         UpdateKnotsRatiosList();
+
         splineMeshController.BuildMesh();
     }
 
-    public void InsertKnot(Vector3 position, int index)
+    //This is not inserting a marker, it's just finding it's position and index in case of insert event.
+    public MarkerDataStruct InsertKnotHandler(InsertMarkerEvent insertMarkerEvent)
     {
-        //Used by Curve Controller to add a knot inbetween other knots.
-        BezierKnot knot = new BezierKnot((float3)position);
-        spline.Insert(index, knot, TangentMode.AutoSmooth, tension);
-        UpdateKnotsRatiosList();
-        splineMeshController.BuildMesh();
+        Vector3 mousePosition = insertMarkerEvent.mousePosition;
+        Vector3 splinePosition = GetNearestPositionInSpline(mousePosition, out float ratio);
+        int index = GetKnotIndex(ratio);
+        MarkerDataStruct markerDataStruct = new MarkerDataStruct(splinePosition, index);
+
+        return markerDataStruct;
     }
 
-    public void UpdateSpline(List<GameObject> markerList)
+    public bool UpdateSpline(UpdateSplineEvent updateSplineEvent)
     {
+        var markerList = updateSplineEvent.MarkersList;
         for (int i = 0; i < markerList.Count; i++)
         {
             //Not sure this is the way..
@@ -127,30 +127,47 @@ public class SplineController : MonoBehaviour
             spline.SetKnot(i, iKnot);
             spline.SetAutoSmoothTension(i, tension);
         }
+
         UpdateKnotsRatiosList();
         splineMeshController.BuildMesh();
+        return true;
     }
 
-    public void RemoveKnot(int index)
+    private void RemoveKnots(DeleteSelectedEvent deleteSelectedEvent)
     {
-        spline.RemoveAt(index);
+        List<int> knotIndicesToRemove = new(deleteSelectedEvent.selectedMarkersIndices);
+        knotIndicesToRemove.Sort();
+        knotIndicesToRemove.Reverse();
+
+        foreach (int index in knotIndicesToRemove)
+        {
+            spline.RemoveAt(index);
+        }
+
         UpdateKnotsRatiosList();
         splineMeshController.BuildMesh();
     }
 
     // This is the method to get the rotation given an index.
-    public Quaternion GetKnotRotation(int knotIndex)
+    public Dictionary<int, Quaternion> GetKnotsRotation(
+        UpdateMarkerRotationEvent updateMarkerRotationEvent
+    )
     {
-        float ratio = GetKnotRatioInSpline(knotIndex);
+        Dictionary<int, Quaternion> affectedMarkersRotation = new();
+        foreach (int knotIndex in updateMarkerRotationEvent.affectedIndices)
+        {
+            float ratio = GetKnotRatioInSpline(knotIndex);
 
-        Quaternion zRotation = GetRotation(ratio);
+            Quaternion zRotation = GetRotation(ratio);
+            affectedMarkersRotation.Add(knotIndex, zRotation);
+        }
 
         // Return the rotation that only affects the Z axis of the game object
-        return zRotation;
+        return affectedMarkersRotation;
     }
 
     // This is the method to get the rotation given a ratio.
-    public Quaternion GetRotation(float ratio)
+    private Quaternion GetRotation(float ratio)
     {
         // Evaluate tangent at this t (ratio)
         float3 tangent = spline.EvaluateTangent(ratio);
@@ -167,7 +184,7 @@ public class SplineController : MonoBehaviour
 
     public float GetKnotRatioInSpline(int knotIndex)
     {
-        //Thanks ChatGPT lol - I didn't find any good way to get the knot ratio.
+        //Thanks ChatGPT lol - I didn't find any good way on the documentation to get the knot ratio.
         // Calculate total spline length
         float totalLength = spline.GetLength();
 
@@ -210,8 +227,10 @@ public class SplineController : MonoBehaviour
         }
     }
 
-    public void UpdateGhostKnots(List<int> ghostMarkersIndices)
+    public void UpdateGhostKnots(UpdateGhostsEvent updateGhostsEvent)
     {
+        List<int> ghostMarkersIndices = updateGhostsEvent.ghostMarkersIndices;
+
         if (ghostMarkersIndices.Count > 0)
         {
             // Method to delete knots and reindex the remaining knots
@@ -223,6 +242,37 @@ public class SplineController : MonoBehaviour
             // Method to reinsert deleted knots
             ghostKnotController.ReInsertDeletedKnots(ghostMarkersIndices, newIndexMapping);
         }
+
         splineMeshController.BuildMesh();
+    }
+
+    public void SplinePointerController(OnHoveringCurveEvent onHoveringCurveEvent)
+    {
+        Vector3 hoverPosition = GetNearestPositionInSpline(Input.mousePosition, out float ratio);
+        if (hoverPointer == null)
+        {
+            hoverPointer = Instantiate(hoverPointerPrefab, hoverPosition, Quaternion.identity);
+        }
+
+        hoverPointer.transform.position = hoverPosition;
+    }
+
+    public void SplinePointerDestroyer(OnHoveringCurveCanceledEvent onHoveringCurveCanceledEvent)
+    {
+        if (hoverPointer != null)
+        {
+            Destroy(hoverPointer.gameObject);
+        }
+    }
+}
+
+//========== EVENTS =============
+public struct UpdateSplineEvent
+{
+    public List<GameObject> MarkersList { get; private set; }
+
+    public UpdateSplineEvent(List<GameObject> markersList)
+    {
+        MarkersList = markersList;
     }
 }

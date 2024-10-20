@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class MarkerController : MonoBehaviour
 {
@@ -19,29 +16,35 @@ public class MarkerController : MonoBehaviour
     Canvas canvas;
 
     private Vector2 offsetMouse_This;
-    private UserInputActions userInputActions;
+    private bool leftMouseButtonIsPressed = false;
 
     //I need to subscribe this MoveMarker_performed to calcuate the offset between marker and mouse IF markerEntity.isSelected
     // Upon performed, you calculate the offset (only once).
 
-    private void OnEnable()
-    {
-        userInputActions = GameManager.Instance.GetInputAction();
-        userInputActions.EditingCurve.MoveMarker.performed += MoveMarker_performed;
-    }
-
-    private void OnDisable()
-    {
-        userInputActions.EditingCurve.MoveMarker.performed -= MoveMarker_performed;
-    }
-
     private void Awake()
     {
         canvas.worldCamera = Camera.main;
+        //=======   Registering Events.   =======
+        GameEventSystem.Instance.RegisterListener<onLeftClickPerformed>(MoveMarker_performed);
+        GameEventSystem.Instance.RegisterListener<onLeftClickCanceled>(MoveMarker_canceled);
     }
 
+    private void OnDestroy()
+    {
+        //=======   Unregistering Events.   =======
+        GameEventSystem.Instance.UnregisterListener<onLeftClickPerformed>(MoveMarker_performed);
+        GameEventSystem.Instance.UnregisterListener<onLeftClickCanceled>(MoveMarker_canceled);
+    }
+
+    //TODO: change this to a arbitrary method like "MarkerUpdate" and call this from the Update() method of MarkersManager
     private void Update()
     {
+        if (leftMouseButtonIsPressed && markerEntity.isSelected)
+        {
+            Vector2 mouseWorldPosition2D = (Vector2)
+                Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            MoveMarkerWithMouse(mouseWorldPosition2D);
+        }
         if (!markerEntity.isGhost)
         {
             canvas.enabled = true;
@@ -103,18 +106,21 @@ public class MarkerController : MonoBehaviour
         transform.localScale = markerEntity.defaultScale;
     }
 
-    public void MoveMarkerWithMouse(Vector2 mouseWorldPosition2D)
+    private void MoveMarkerWithMouse(Vector2 mouseWorldPosition2D)
     {
         //Used by Curve Manager. If selected, move this Marker.
         transform.position = mouseWorldPosition2D + offsetMouse_This;
     }
 
-    private void MoveMarker_performed(InputAction.CallbackContext context)
+    public void MoveMarker_performed(onLeftClickPerformed moveSelectedEvent)
     {
-        //--------------------TODO - PAY ATTENTION TO THIS LATER--------------------
-        // I did this this way because I don't know how to reference the instance of InputManager on a instance of a prefab.
-        // Actually maybe this wasn't the issue before... perhaps I can just use the InputManager here and grab it from the prefab.
+        leftMouseButtonIsPressed = true;
         Vector2 mouseWorldPosition2D = (Vector2)Camera.main.ScreenToWorldPoint(Input.mousePosition);
         offsetMouse_This = (Vector2)transform.position - mouseWorldPosition2D; //I feel itchy about adding the inputSystem into this script.
+    }
+
+    public void MoveMarker_canceled(onLeftClickCanceled moveCanceledEvent)
+    {
+        leftMouseButtonIsPressed = false;
     }
 }
