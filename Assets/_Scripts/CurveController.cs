@@ -1,63 +1,105 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Splines;
 
 public class CurveController : MonoBehaviour
 {
-    [SerializeField] private GameObject marker;
+    [SerializeField]
+    private GameObject marker;
 
-    [SerializeField] private InputManager inputManager;
+    //[SerializeField] private InputManager inputManager;
 
-    [SerializeField] private MarkerSelection markerSelection;
+    [SerializeField]
+    private GhostKnotController ghostKnotController;
 
-    [SerializeField] private GhostKnotController ghostKnotController;
+    [SerializeField]
+    private GameObject UI_FrameInputWindow;
 
-    [SerializeField] private GameObject UI_FrameInputWindow;
-
-    private bool leftMouseButtonIsPressed = false;
-    private GameObject selectedMarker;
-    private GameObject selectedObject;
     public List<GameObject> markerList = new List<GameObject>();
     public List<int> ghostIndices = new List<int>();
 
-    private void Update()
+    private void Start()
     {
-        if (markerSelection.selectedMarkerList != null && leftMouseButtonIsPressed)
-        {
-            var result = GameEventSystem.Intance.Raise<UpdateSplineEvent, bool>(new UpdateSplineEvent(markerList));
-            UpdateGhostMarkers();
-            //Update rotation of markers.
-            UpdateALLMarkersRotation();
-        }
+        //=======   Registering Events.   =======
+        GameEventSystem.Instance.RegisterListener<onRightClickPerformed>(AddMarkerHandler);
+        GameEventSystem.Instance.RegisterListener<MoveSelectedEvent>(MoveSelectMarker);
+        GameEventSystem.Instance.RegisterListener<DeleteSelectedEvent>(DeleteMarker_performed);
+        GameEventSystem.Instance.RegisterListener<ShiftDeleteSelectedEvent>(
+            ShiftDeleteMarker_performed
+        );
+        GameEventSystem.Instance.RegisterListener<onRecordingFinishedEvent>(AddRecordedMarkers);
     }
 
-    public void AddMarker()
+    private void OnDestroy()
     {
-        Vector2 markerPosition = Vector2.zero; //Initializing default markerPosition
+        //=======   Unregistering Events.   =======
+        GameEventSystem.Instance.UnregisterListener<onRightClickPerformed>(AddMarkerHandler);
+        GameEventSystem.Instance.UnregisterListener<MoveSelectedEvent>(MoveSelectMarker);
+        GameEventSystem.Instance.RegisterListener<DeleteSelectedEvent>(DeleteMarker_performed);
+        GameEventSystem.Instance.RegisterListener<ShiftDeleteSelectedEvent>(
+            ShiftDeleteMarker_performed
+        );
+        GameEventSystem.Instance.RegisterListener<onRecordingFinishedEvent>(AddRecordedMarkers);
+    }
 
-        if (splineController.curveHovered) //Checks if will add a marker inbetween.
+    private void Update()
+    {
+        //TODO What was this meant to be anyway?
+        GameEventSystem.Instance.Raise<UpdateSplineEvent, bool>(new UpdateSplineEvent(markerList));
+    }
+
+    private void AddMarkerHandler(onRightClickPerformed onRightClickPerformed)
+    {
+        Vector2 markerPosition = onRightClickPerformed.mousePosition;
+        List<int> affectedMarkersRotationIndex = new List<int>();
+
+        if (
+            onRightClickPerformed.mouseHitAllArray3D != null
+            && onRightClickPerformed.mouseHitAllArray3D.Length != 0
+        ) //Checks if will add a marker inbetween.
         {
-            AddMarker_INBETWEEN();
+            //Raising insert Marker event to get info to where the marker needs to be on the spline.
+            MarkerDataStruct markerData = GameEventSystem.Instance.Raise<
+                InsertMarkerEvent,
+                MarkerDataStruct
+            >(new InsertMarkerEvent(onRightClickPerformed.mousePosition));
+            InsertMarker(markerData);
+
+            affectedMarkersRotationIndex.Add(markerData.markerIndex);
+            affectedMarkersRotationIndex.Add(markerData.markerIndex - 1);
+            affectedMarkersRotationIndex.Add(markerData.markerIndex + 1);
+
+            //AddMarkerEvent with markerData index and position.
+            GameEventSystem.Instance.Raise<AddMarkerEvent>(
+                new AddMarkerEvent(markerData.markerPosition, markerData.markerIndex)
+            );
         }
         else //If not, then add to the end.
         {
-            AddMarker_TAIL(markerPosition);
+            AddMarker(markerPosition);
+
+            //AddMarkerEvent with last index and markerPosition.
+            int lastIndex = markerList.Count - 1;
+            affectedMarkersRotationIndex.Add(lastIndex);
+            if (lastIndex > 0)
+            {
+                affectedMarkersRotationIndex.Add(lastIndex - 1);
+            }
+            GameEventSystem.Instance.Raise<AddMarkerEvent>(
+                new AddMarkerEvent(markerPosition, lastIndex)
+            );
         }
+
+        UpdateMarkersRotation(affectedMarkersRotationIndex);
     }
 
-    public void AddMarker_TAIL(Vector2 markerPosition)
+    private void AddMarker(Vector2 markerPosition)
     {
-        DeselectAllMarkers();
-        GameObject newMarker;
-        // Vector2 markerPosition;
-
-        if (markerPosition ==
-            Vector2.zero) //This basically doesn't allow the user to put markers on (0,0) which he should be allowed. It's a dirty FIX.
-        {
-            markerPosition = inputManager.GetWorldMouseLocation2D();
-        }
-
-        newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
+        GameObject newMarker = Instantiate(
+            marker,
+            markerPosition,
+            Quaternion.identity,
+            this.transform
+        );
 
         markerList.Add(newMarker);
         if (newMarker.TryGetComponent(out MarkerEntity markerEntity))
@@ -65,25 +107,32 @@ public class CurveController : MonoBehaviour
             markerEntity.frameNumber = markerList.Count;
         }
 
-        splineController.AddKnot(newMarker.transform.position);
         UpdateGhostMarkers();
-        UpdateALLMarkersRotation();
     }
 
-    private void AddMarker_INBETWEEN()
+    private void AddRecordedMarkers(onRecordingFinishedEvent onRecordingFinishedEvent)
     {
-        DeselectAllMarkers();
-        GameObject newMarker;
-        Vector2 markerPosition;
+        List<int> affectedMarkersRotationIndex = new(markerList.Count - 1); //Adding the last before starting adding more markers.
 
-        markerPosition = splineController.GetNearestPositionInSpline(out float ratio);
-        newMarker = Instantiate(marker, markerPosition, Quaternion.identity, this.transform);
+        foreach (MarkerDataStruct marker in onRecordingFinishedEvent.recordedMarkers)
+        {
+            AddMarker(marker.markerPosition);
+            affectedMarkersRotationIndex.Add(markerList.Count - 1); //Adding the new last marker.
+        }
 
-        //If curve.Hovered, Insert at specific index.
-        int ratioIndex = splineController.GetKnotIndex(ratio);
+        UpdateMarkersRotation(affectedMarkersRotationIndex);
+    }
+
+    private void InsertMarker(MarkerDataStruct markerData)
+    {
+        Vector2 markerPosition = markerData.markerPosition;
+        int ratioIndex = markerData.markerIndex;
+        GameObject newMarker = Instantiate(marker, markerPosition, Quaternion.identity, transform);
+
         markerList.Insert(ratioIndex, newMarker);
 
         //Updating all frame numbers.
+        //TODO You can just update from this marker onwards, and not all of them.
         for (int i = 0; i < markerList.Count; i++)
         {
             if (markerList[i].TryGetComponent(out MarkerEntity markerEntity))
@@ -92,169 +141,108 @@ public class CurveController : MonoBehaviour
             }
         }
 
-        splineController.InsertKnot(markerPosition, ratioIndex);
         UpdateGhostMarkers();
-        UpdateALLMarkersRotation();
     }
 
-    public void MoveMarker_performed()
+    private void MoveSelectMarker(MoveSelectedEvent moveSelectedEvent)
     {
-        leftMouseButtonIsPressed = true;
-
-        RaycastHit2D[] mouseRayCastHit = inputManager.DetectALL_MouseRayCastHit2D();
-        if (mouseRayCastHit.Length > 0)
+        foreach (GameObject marker in moveSelectedEvent.selectedMarkers)
         {
-            selectedObject = inputManager.GetHoveredObject();
-
-            if (selectedObject.TryGetComponent(out MarkerEntity markerEntity)) //Checks if it's a marker.
+            if (marker.TryGetComponent(out MarkerEntity markerEntity))
             {
-                //Old way of checking for double click.
-                if (
-                    markerSelection.selectedMarkerList.Contains(selectedObject)
-                    && markerSelection.selectedMarkerList.Count < 2
-                ) //This checks if this marker is ALREADY selected.
+                if (markerEntity.isGhost)
                 {
-                    // Update Frame Number.
-                    //Vector3 offsetPosition = selectedObject.transform.position;
-                    //offsetPosition.y += 0.5f;
-                    // Instantiate(UI_FrameInputWindow,selectedObject.transform.position,Quaternion.identity);
-                }
-
-                selectedMarker = selectedObject;
-
-                if (markerSelection.selectedMarkerList.Count == 0) //If the list is empty, select this marker.
-                {
-                    SelectMarker(markerEntity, selectedMarker);
-                }
-                else
-                {
-                    if (Input.GetKey(KeyCode.LeftShift) ||
-                        Input.GetKey(KeyCode.RightShift)) //If it isn't empty check if shift is clicked.
-                    {
-                        if (markerSelection.selectedMarkerList
-                            .Contains(selectedMarker)) //If marker already in list, remove it.
-                        {
-                            DeselectMarker(markerEntity, selectedMarker);
-                        }
-                        else //otherwise, add it.
-                        {
-                            SelectMarker(markerEntity, selectedMarker);
-                        }
-                    }
-                    else //if list is not empty and shift is NOT clicked
-                    {
-                        if (markerSelection.selectedMarkerList.Contains(selectedMarker)) //If this marker is selected.
-                        {
-                            //Do nothing. Basically will move all of them together.
-                        }
-                        else //If it isn't, deselect all, and select this one.
-                        {
-                            DeselectAllMarkers();
-                            SelectMarker(markerEntity, selectedMarker);
-                        }
-                    }
+                    TurnGhostIntoKeyMarker(markerEntity.frameNumber - 1);
                 }
             }
         }
-        else
+        UpdateGhostMarkers();
+    }
+
+    private void DeleteMarker_performed(DeleteSelectedEvent deleteSelectedEvent)
+    {
+        //This was the way I found to delete the markers in their correct indices, before I was getting errors.
+        List<int> indexToDelete = new(deleteSelectedEvent.selectedMarkersIndices);
+        List<int> affectedMarkersRotationIndex = new List<int>();
+
+        indexToDelete.Sort();
+        indexToDelete.Reverse();
+
+        foreach (int index in indexToDelete)
         {
-            DeselectAllMarkers();
-        }
-    }
-
-    public void MoveMarker_canceled()
-    {
-        leftMouseButtonIsPressed = false;
-
-        selectedMarker = null;
-        selectedObject = null;
-    }
-
-    private void DeselectAllMarkers()
-    {
-        for (int i = markerSelection.selectedMarkerList.Count - 1; i >= 0; i--)
-        {
-            markerSelection.selectedMarkerList[i].GetComponent<MarkerEntity>().isSelected = false;
-            markerSelection.selectedMarkerList.RemoveAt(i);
-        }
-    }
-
-    public void SelectMarker(MarkerEntity markerEntity, GameObject selectedMarker)
-    {
-        int index = markerEntity.frameNumber - 1;
-        markerEntity.isSelected = true;
-        markerSelection.selectedMarkerList.Add(selectedMarker);
-        TurnGhostIntoKeyMarker(index);
-    }
-
-    private void DeselectMarker(MarkerEntity markerEntity, GameObject selectedMarker)
-    {
-        markerEntity.isSelected = false;
-        markerSelection.selectedMarkerList.Remove(selectedMarker);
-    }
-
-    public void DeleteMarker_performed()
-    {
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) //Check for SHIFT for GHOSTS.
-        {
-            foreach (GameObject marker in markerSelection.selectedMarkerList)
+            //Checking if we're deleting the last marker. If yes, make second to last, if there is one, a KEY marker.
+            if (index == markerList.Count - 1)
             {
-                TurnMarkerToGhost(marker);
-            }
+                //We're starting the deletetion from the end. So if we're deleting the last, the first affected one is the last - 1.
+                affectedMarkersRotationIndex.Clear();
+                affectedMarkersRotationIndex.Add(index - 1);
 
-            UpdateGhostMarkersPosition();
-            UpdateALLMarkersRotation();
-            DeselectAllMarkers();
-        }
-        else
-        {
-            //This was the way I found to delete the markers in their correct indices, before I was getting errors.
-            List<int> indexToDelete = new List<int>();
-            for (int i = 0; i < markerSelection.selectedMarkerList.Count; i++)
-            {
-                if (
-                    markerSelection
-                    .selectedMarkerList[i]
-                    .TryGetComponent(out MarkerEntity markerEntity)
-                )
+                if (markerList.Count > 1)
                 {
-                    indexToDelete.Add(markerEntity.frameNumber - 1);
+                    TurnGhostIntoKeyMarker(index - 1);
                 }
             }
-
-            indexToDelete.Sort();
-            indexToDelete.Reverse();
-
-            foreach (int index in indexToDelete)
+            else
             {
-                //Checking if we're deleting the last marker. If yes, make second to last, if there is one, a KEY marker.
-                if (index == markerList.Count - 1)
+                if (index - 1 >= 0)
                 {
-                    if (markerList.Count > 1)
-                    {
-                        TurnGhostIntoKeyMarker(index - 1);
-                    }
+                    affectedMarkersRotationIndex.Add(index - 1);
+                }
+                if (!affectedMarkersRotationIndex.Contains(index))
+                {
+                    affectedMarkersRotationIndex.Add(index);
                 }
                 //Checking if we're deleting the first marker. If yes, make second, if there is one, a KEY marker.
-                else if (index == 0)
+                if (index == 0)
                 {
                     if (markerList.Count > 1)
                     {
                         TurnGhostIntoKeyMarker(index + 1);
                     }
                 }
-
-                GameObject markerToDelete = markerList[index];
-                splineController.RemoveKnot(index);
-                markerList.RemoveAt(index);
-                Destroy(markerToDelete);
             }
 
-            markerSelection.selectedMarkerList.Clear();
-            UpdateFrameNumber();
-            UpdateGhostMarkers();
-            UpdateALLMarkersRotation();
+            GameObject markerToDelete = markerList[index];
+            markerList.RemoveAt(index);
+            Destroy(markerToDelete);
         }
+
+        UpdateMarkersRotation(affectedMarkersRotationIndex);
+
+        UpdateFrameNumber();
+        UpdateGhostMarkers();
+    }
+
+    private void ShiftDeleteMarker_performed(ShiftDeleteSelectedEvent shiftDeleteSelectedEvent)
+    {
+        List<int> selectedMarkers = shiftDeleteSelectedEvent.selectedMarkersIndices;
+        List<int> affectedMarkersRotationIndex = new List<int>();
+
+        selectedMarkers.Sort();
+        selectedMarkers.Reverse();
+
+        foreach (int index in selectedMarkers)
+        {
+            TurnMarkerToGhost(markerList[index]);
+
+            //Figuring out the index of the affected markers by the ghosting.
+            affectedMarkersRotationIndex.Add(index);
+            if (index - 1 >= 0 && !affectedMarkersRotationIndex.Contains(index - 1))
+            {
+                affectedMarkersRotationIndex.Add(index - 1);
+            }
+            if (
+                index + 1 <= markerList.Count - 1
+                && !affectedMarkersRotationIndex.Contains(index + 1)
+            )
+            {
+                affectedMarkersRotationIndex.Add(index + 1);
+            }
+        }
+
+        UpdateGhostMarkersPosition();
+
+        UpdateMarkersRotation(affectedMarkersRotationIndex);
     }
 
     private void UpdateFrameNumber()
@@ -268,22 +256,26 @@ public class CurveController : MonoBehaviour
         }
     }
 
-    private void UpdateALLMarkersRotation()
+    private void UpdateMarkersRotation(List<int> affectedMarkers)
     {
-        //Update marker's rotation taken from knot at same index.
-        for (int i = 0; i < markerList.Count; i++)
-        {
-            markerList[i].gameObject.transform.rotation = splineController.GetKnotRotation(i);
-        }
+        Dictionary<int, Quaternion> affectedMarkersRotation = new();
 
-        //I'll use this now to update the rotation of the markers, but this will also update the position/creation of ghost markers maybe.
+        affectedMarkersRotation = GameEventSystem.Instance.Raise<
+            UpdateMarkerRotationEvent,
+            Dictionary<int, Quaternion>
+        >(new UpdateMarkerRotationEvent(affectedMarkers));
+
+        foreach (KeyValuePair<int, Quaternion> marker in affectedMarkersRotation)
+        {
+            markerList[marker.Key].gameObject.transform.rotation = marker.Value;
+        }
     }
 
-    private void
-        UpdateGhostMarkers() //Need to call this every time a marker is deleted, and when a marker is added on the curve.
+    //Need to call this every time a marker is deleted, added or moved?
+    private void UpdateGhostMarkers()
     {
         UpdateGhostIndices();
-        splineController.UpdateGhostKnots(ghostIndices);
+        GameEventSystem.Instance.Raise<UpdateGhostsEvent>(new UpdateGhostsEvent(ghostIndices));
         UpdateGhostMarkersPosition();
     }
 
@@ -326,8 +318,7 @@ public class CurveController : MonoBehaviour
         if (marker.TryGetComponent(out MarkerEntity markerEntity))
         {
             int markerIndex = markerEntity.frameNumber - 1;
-            if (markerIndex > 0 &&
-                markerIndex < markerList.Count - 1) //Checking if it's not the first or last marker index.
+            if (markerIndex > 0 && markerIndex < markerList.Count - 1) //Checking if it's not the first or last marker index.
             {
                 //This turns on isGhost and adds that index to the ghostIndices list.
                 markerEntity.isGhost = true;
@@ -339,7 +330,7 @@ public class CurveController : MonoBehaviour
         }
 
         // Passes the ghostIndices list to Spline Controller for it to update the Ghosts position.
-        splineController.UpdateGhostKnots(ghostIndices);
+        GameEventSystem.Instance.Raise<UpdateGhostsEvent>(new UpdateGhostsEvent(ghostIndices));
     }
 
     private void TurnGhostIntoKeyMarker(int index)
@@ -354,12 +345,89 @@ public class CurveController : MonoBehaviour
             ghostIndices.Remove(index);
         }
 
-        splineController.UpdateGhostKnots(ghostIndices);
+        GameEventSystem.Instance.Raise<UpdateGhostsEvent>(new UpdateGhostsEvent(ghostIndices));
         UpdateGhostMarkersPosition();
     }
 
     internal void UpdateFrameNumber(int currentFrameNumber, int updatedFrameNumber)
     {
         //
+    }
+}
+
+// Structs to send or return as data
+public struct MarkerDataStruct
+{
+    public Vector3 markerPosition { get; private set; }
+    public int markerIndex { get; private set; }
+    public bool isKey { get; private set; }
+
+    public MarkerDataStruct(
+        Vector3 markerPosition = default,
+        int markerIndex = -1,
+        bool isKey = true
+    )
+    {
+        this.markerPosition = markerPosition;
+        this.markerIndex = markerIndex;
+        this.isKey = isKey;
+    }
+}
+
+//====================    EVENTS    ====================
+public struct AddMarkerEvent
+{
+    public Vector3 position { get; private set; }
+    public int index { get; private set; }
+
+    public AddMarkerEvent(Vector3 position, int index)
+    {
+        this.position = position;
+        this.index = index;
+    }
+}
+
+public struct InsertMarkerEvent
+{
+    public Vector3 mousePosition { get; private set; }
+
+    public InsertMarkerEvent(Vector3 mousePosition)
+    {
+        this.mousePosition = mousePosition;
+    }
+}
+
+public struct DeleteMarkersEvent
+{
+    public int deletedMarkerIndex { get; private set; }
+
+    public DeleteMarkersEvent(int deletedMarkerIndex)
+    {
+        this.deletedMarkerIndex = deletedMarkerIndex;
+    }
+}
+
+public struct MoveMarkersEvent
+{
+    public Dictionary<int, Vector3> movedMarkers { get; private set; }
+}
+
+public struct UpdateMarkerRotationEvent
+{
+    public List<int> affectedIndices { get; private set; }
+
+    public UpdateMarkerRotationEvent(List<int> affectedIndices)
+    {
+        this.affectedIndices = affectedIndices;
+    }
+}
+
+public struct UpdateGhostsEvent
+{
+    public List<int> ghostMarkersIndices { get; private set; }
+
+    public UpdateGhostsEvent(List<int> ghostMarkersIndices)
+    {
+        this.ghostMarkersIndices = ghostMarkersIndices;
     }
 }

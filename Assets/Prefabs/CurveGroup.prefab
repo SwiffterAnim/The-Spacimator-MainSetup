@@ -564,10 +564,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4879506332484149025}
-  - component: {fileID: -1921425868330211839}
-  - component: {fileID: 4103200772902332837}
-  - component: {fileID: 5558305253267239936}
-  - component: {fileID: 6166424837081448680}
   - component: {fileID: 3906938819488110563}
   - component: {fileID: 4750616436114432465}
   - component: {fileID: 697113965549478027}
@@ -600,118 +596,6 @@ Transform:
   - {fileID: 6206205937132011316}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-1921425868330211839
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7577508812450695204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a37f06bce82c344ae92193b304bac28c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 4e36b7256dcb24deeb676178355f56f7, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3906938819488110563}
-        m_TargetAssemblyTypeName: CurveController, Assembly-CSharp
-        m_MethodName: AddMarker
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &4103200772902332837
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7577508812450695204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a37f06bce82c344ae92193b304bac28c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: e603abc07ab80449a84852a97e7a3f19, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3906938819488110563}
-        m_TargetAssemblyTypeName: CurveController, Assembly-CSharp
-        m_MethodName: MoveMarker_performed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &5558305253267239936
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7577508812450695204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a37f06bce82c344ae92193b304bac28c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 936f29fa273904735b2db42517b349a4, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3906938819488110563}
-        m_TargetAssemblyTypeName: CurveController, Assembly-CSharp
-        m_MethodName: MoveMarker_canceled
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &6166424837081448680
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7577508812450695204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a37f06bce82c344ae92193b304bac28c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 65f80cbcd60a8420dad559593504cd16, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3906938819488110563}
-        m_TargetAssemblyTypeName: CurveController, Assembly-CSharp
-        m_MethodName: DeleteMarker_performed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &3906938819488110563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -725,9 +609,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   marker: {fileID: 2140980353681601456, guid: d835d243d698e4398a39bb2cb8f154d7, type: 3}
-  inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
-  markerSelection: {fileID: 4750616436114432465}
-  splineController: {fileID: -1114635761021481889}
   ghostKnotController: {fileID: 697113965549478027}
   UI_FrameInputWindow: {fileID: 3692250928063931522, guid: 30518a944bbea45178557e93394a2398, type: 3}
   markerList: []
@@ -746,7 +627,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputManager: {fileID: 6520150488266711199, guid: e61056653c38c4846b2d70fe4ffa5591, type: 3}
   curveController: {fileID: 3906938819488110563}
-  selectedMarkerList: []
 --- !u!114 &697113965549478027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -790,7 +670,6 @@ MonoBehaviour:
   hoverPointerPrefab: {fileID: 2537828424297882823, guid: 6523249ea3b0c418380976d48d3b88de, type: 3}
   tension: 1
   ghostKnotController: {fileID: 697113965549478027}
-  curveHovered: 0
 --- !u!114 &4686768841231996120
 MonoBehaviour:
   m_ObjectHideFlags: 0

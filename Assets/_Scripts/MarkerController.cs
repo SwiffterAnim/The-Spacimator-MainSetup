@@ -24,6 +24,16 @@ public class MarkerController : MonoBehaviour
     private void Awake()
     {
         canvas.worldCamera = Camera.main;
+        //=======   Registering Events.   =======
+        GameEventSystem.Instance.RegisterListener<onLeftClickPerformed>(MoveMarker_performed);
+        GameEventSystem.Instance.RegisterListener<onLeftClickCanceled>(MoveMarker_canceled);
+    }
+
+    private void OnDestroy()
+    {
+        //=======   Unregistering Events.   =======
+        GameEventSystem.Instance.UnregisterListener<onLeftClickPerformed>(MoveMarker_performed);
+        GameEventSystem.Instance.UnregisterListener<onLeftClickCanceled>(MoveMarker_canceled);
     }
 
     //TODO: change this to a arbitrary method like "MarkerUpdate" and call this from the Update() method of MarkersManager
@@ -102,14 +112,14 @@ public class MarkerController : MonoBehaviour
         transform.position = mouseWorldPosition2D + offsetMouse_This;
     }
 
-    public void MoveMarker_performed()
+    public void MoveMarker_performed(onLeftClickPerformed moveSelectedEvent)
     {
         leftMouseButtonIsPressed = true;
         Vector2 mouseWorldPosition2D = (Vector2)Camera.main.ScreenToWorldPoint(Input.mousePosition);
         offsetMouse_This = (Vector2)transform.position - mouseWorldPosition2D; //I feel itchy about adding the inputSystem into this script.
     }
 
-    public void MoveMarker_canceled()
+    public void MoveMarker_canceled(onLeftClickCanceled moveCanceledEvent)
     {
         leftMouseButtonIsPressed = false;
     }

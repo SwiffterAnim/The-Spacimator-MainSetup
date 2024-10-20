@@ -1,19 +1,8 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class DragSelectController : MonoBehaviour
 {
-    [SerializeField]
-    private InputManager inputManager;
-
-    [SerializeField]
-    private CurveController curveController;
-
-    [SerializeField]
-    private MarkerSelection markerSelection;
-
     [SerializeField]
     private RectTransform selectionBox;
 
@@ -26,36 +15,38 @@ public class DragSelectController : MonoBehaviour
     private Vector3 mousePositionEnd;
 
     private RaycastHit2D[] mouseRayCastHitArray;
-    private UserInputActions userInputActions;
 
     private void Start()
     {
-        userInputActions = GameManager.Instance.GetInputAction();
-        userInputActions.EditingCurve.MoveMarker.performed += MoveMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.canceled += MoveMarker_canceled;
-
-        mouseRayCastHitArray = markerSelection.mouseRayCastHitArray;
+        GameEventSystem.Instance.RegisterListener<onLeftClickPerformed>(MoveSelect_performed);
+        GameEventSystem.Instance.RegisterListener<onLeftClickCanceled>(MoveSelect_canceled);
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
-        userInputActions.EditingCurve.MoveMarker.performed -= MoveMarker_performed;
-        userInputActions.EditingCurve.MoveMarker.canceled -= MoveMarker_canceled;
+        GameEventSystem.Instance.UnregisterListener<onLeftClickPerformed>(MoveSelect_performed);
+        GameEventSystem.Instance.UnregisterListener<onLeftClickCanceled>(MoveSelect_canceled);
     }
 
     void Update()
     {
-        if (mouseRayCastHitArray.Length == 0 && mouseLeftButtonPressed)
+        if (mouseRayCastHitArray != null)
         {
-            if (!isDragSelect && (mousePositionInitial - Input.mousePosition).magnitude > magnitude)
+            if (mouseRayCastHitArray.Length == 0 && mouseLeftButtonPressed)
             {
-                isDragSelect = true;
-            }
+                if (
+                    !isDragSelect
+                    && (mousePositionInitial - Input.mousePosition).magnitude > magnitude
+                )
+                {
+                    isDragSelect = true;
+                }
 
-            if (isDragSelect)
-            {
-                mousePositionEnd = Input.mousePosition;
-                ActivateSelectionBox();
+                if (isDragSelect)
+                {
+                    mousePositionEnd = Input.mousePosition;
+                    ActivateSelectionBox();
+                }
             }
         }
     }
@@ -82,13 +73,13 @@ public class DragSelectController : MonoBehaviour
                 selectedMarkers.Add(marker);
             }
         }
-        foreach (GameObject selectedMarker in selectedMarkers)
+        if (selectedMarkers.Count > 0)
         {
-            if (selectedMarker.TryGetComponent(out MarkerEntity markerEntity))
-            {
-                curveController.SelectMarker(markerEntity, selectedMarker);
-            }
+            GameEventSystem.Instance.Raise<SelectionBoxEvent>(
+                new SelectionBoxEvent(selectedMarkers)
+            );
         }
+
         selectedMarkers.Clear();
     }
 
@@ -113,19 +104,31 @@ public class DragSelectController : MonoBehaviour
         selectionBox.position = new Vector3(-1000, -1000, 0);
     }
 
-    private void MoveMarker_performed(InputAction.CallbackContext context)
+    private void MoveSelect_performed(onLeftClickPerformed onLeftClickPerformed)
     {
         mouseLeftButtonPressed = true;
         mousePositionInitial = Input.mousePosition;
-        mouseRayCastHitArray = markerSelection.mouseRayCastHitArray; //Not sure this is going to work.
+        mouseRayCastHitArray = onLeftClickPerformed.mouseRayCastHit;
     }
 
-    private void MoveMarker_canceled(InputAction.CallbackContext context)
+    private void MoveSelect_canceled(onLeftClickCanceled onLeftClickCanceled)
     {
         mouseLeftButtonPressed = false;
         isDragSelect = false;
 
         SelectObjects();
         DeactivateSelectionBox();
+    }
+}
+
+//====================    EVENTS    ====================
+
+public struct SelectionBoxEvent
+{
+    public List<GameObject> selectedMarkers { get; private set; }
+
+    public SelectionBoxEvent(List<GameObject> selectedMarkers)
+    {
+        this.selectedMarkers = selectedMarkers;
     }
 }
